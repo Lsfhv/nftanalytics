@@ -46,10 +46,8 @@ def getListings(tokenIds, chain, address):
     for tokenId in tokenIds:
         rst += f"&token_ids={tokenId}"
     endpoint += rst
-    # endpoint += rst
 
     response = get(endpoint, v2 = True)['orders']
-# 0x1a92f7381b9f03921564a437210bb9396471050c
 
     return response    
 
@@ -59,6 +57,8 @@ Returns all listings.
 """
 def getAllListings(slug):
     endpoint = f"listings/collection/{slug}/all"
+
+    print(f"Getting all listings for {slug} ... ")
 
     items = []
     params = {"limit":LIMIT}
@@ -79,6 +79,8 @@ def getAllListings(slug):
 
     response = response['listings']
     items += list(map(lambda x : x['protocol_data']['parameters'], response))
+
+    print(f"Finished getting all listings for {slug}")
 
     return items
 

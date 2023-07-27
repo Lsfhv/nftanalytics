@@ -5,6 +5,9 @@ from analytics.numberListed import getIds
 from analytics.numberListed import getListings
 from analytics.numberListed import getAllListings
 
+from analytics.expireInNext import expireInNext
+from analytics.listedInPast import listedInPast
+
 
 # print("Enter collection slug: ")
 # slug = input()
@@ -28,3 +31,6 @@ from analytics.numberListed import getAllListings
 slug = argv[1]
 address = argv[2]
 chain = argv[3]
+
+x = listedInPast("HALFDAY", slug)
+print(x)

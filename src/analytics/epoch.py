@@ -3,7 +3,7 @@ Some calculations with epoch time.
 """
 
 """
-How many (seconds/hours/day) since start time?
+How many (seconds/hours/day) between startTime and endTime
 """
 def epochToX(startTime, endTime, format=None):
     if endTime < startTime: 
