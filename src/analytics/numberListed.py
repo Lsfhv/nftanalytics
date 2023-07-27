@@ -1,0 +1,84 @@
+"""Tracks the amount of items listed 
+within past day/week/month.
+"""
+
+from request.getRequest import get
+from analytics.epoch import epochToX
+from time import time
+
+
+LIMIT = "50"
+HOUR = "HOUR"
+
+"""
+https://docs.opensea.io/reference/retrieve-nfts-by-contract
+
+Returns a list of token ids.
+"""
+def getIds(address, chain):
+    endpoint = f"""chain/{chain}/contract/{address}/nfts"""
+
+    params = {"limit": LIMIT}
+
+    response = get(endpoint, v2 = True, params = params)
+    items =[]
+    print("Getting nft ids ... ")
+    while 'next' in response:
+        items += list(map(lambda x: int(x['identifier']), response['nfts']))
+
+        params['next'] = response['next']
+        response = get(endpoint, v2 = True, params = params)   
+
+    items += list(map(lambda x: int(x['identifier']), response['nfts']))
+
+    print("Finished")
+
+    return items
+
+"""
+Gets the listings by tokenIds
+"""
+def getListings(tokenIds, chain, address):
+    endpoint = f"""orders/{chain}/seaport/listings?asset_contract_address={address}"""
+
+    rst = ""
+
+    for tokenId in tokenIds:
+        rst += f"&token_ids={tokenId}"
+    endpoint += rst
+    # endpoint += rst
+
+    response = get(endpoint, v2 = True)['orders']
+# 0x1a92f7381b9f03921564a437210bb9396471050c
+
+    return response    
+
+
+"""
+Returns all listings.
+"""
+def getAllListings(slug):
+    endpoint = f"listings/collection/{slug}/all"
+
+    items = []
+    params = {"limit":LIMIT}
+    response =  get(endpoint, v2 = True, params = params)
+
+    s = set()
+    
+
+    while 'next' in response:
+        
+        r = response['listings']
+        for i in r:
+            s.add(i['protocol_data']['parameters']['offer'][0]['identifierOrCriteria'])
+        items += list(map(lambda x: x['protocol_data']['parameters'], r))
+
+        params['next'] = response['next']
+        response = get(endpoint, v2 = True, params = params)
+
+    response = response['listings']
+    items += list(map(lambda x : x['protocol_data']['parameters'], response))
+
+    return items
+

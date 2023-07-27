@@ -1,7 +1,12 @@
+"""
+Handles all HTTP requests to be made. 
+"""
+
 import requests
 from keys import openseaKey
 
-baseEndpoint = "https://api.opensea.io/api/v1"
+baseEndpointV1 = "https://api.opensea.io/api/v1"
+baseEndpointV2 = "https://api.opensea.io/v2"
 
 """Turns parameteres into the format required by the API."""
 def generateParams(params):
@@ -17,17 +22,26 @@ def generateParams(params):
 
     return result
 
-"""Does a http GET request.""" 
-def get(endpoint, params={}):
-    url = f"""{baseEndpoint}/{endpoint}"""
+"""
+Get Request.
+v2 = False, v1 api used.
+v2 = True, v2 api used.
+"""
+def get(endpoint, v2 = False, params={}):
+    url = f"""{(lambda x: baseEndpointV2 if x == True else baseEndpointV1)(v2)}/{endpoint}"""
 
     url += generateParams(params)
     
-    print(url)
-
     headers = {
         "accept":  "application/json",
         "X-API-KEY": f"{openseaKey}"
     }
+    response = requests.get(url, headers = headers)
 
-    return requests.get(url, headers = headers).json()
+    while response.status_code != 200:
+        print("Response code not 200, trying again ...")
+        
+        response = requests.get(url, headers = headers)
+        
+
+    return response.json()
