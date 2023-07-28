@@ -16,14 +16,7 @@ def listedInPast(interval, slug):
 
     currentTime = time()
 
-    if interval == "HOUR":
-        bound = currentTime - (60*60)
-    elif interval == "DAY":
-        bound = currentTime - (60*60*24)
-    elif interval == "WEEK":
-        bound = currentTime - (60*60*24*7)
-    elif interval == "HALFDAY":
-        bound = currentTime - (60*60*6)
+    bound = currentTime - interval
     
     result = 0
     for i in startTimes:

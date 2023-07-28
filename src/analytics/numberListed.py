@@ -10,6 +10,15 @@ from time import time
 LIMIT = "50"
 HOUR = "HOUR"
 
+
+"""
+Gets the total nft count for a collection.
+https://docs.opensea.io/v1.0/reference/retrieving-collection-stats
+"""
+def getTotalItems(slug):
+    url = f"collection/{slug}/stats"
+    return get(url)['stats']['total_supply']
+
 """
 https://docs.opensea.io/reference/retrieve-nfts-by-contract
 
@@ -53,7 +62,7 @@ def getListings(tokenIds, chain, address):
 
 
 """
-Returns all listings.
+Returns all listings. (Not unique)
 """
 def getAllListings(slug):
     endpoint = f"listings/collection/{slug}/all"
@@ -83,4 +92,6 @@ def getAllListings(slug):
     print(f"Finished getting all listings for {slug}")
 
     return items
+
+# Get all unqiue listings and then count how many llisting there are for each unqiue nft.s
 
