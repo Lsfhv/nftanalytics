@@ -2,7 +2,7 @@
 How many listings were created in the path (HOUR/DAY/WEEK)
 """
 
-from analytics.numberListed import getAllListings
+from analytics.numberListed import getUniqueListings
 from time import time
 
 
@@ -10,9 +10,9 @@ from time import time
 How many listings have been listing in past [...]
 """
 def listedInPast(interval, slug):
-    listings = getAllListings(slug)
+    listings = getUniqueListings(slug)
 
-    startTimes = list(map(lambda x : int(x['startTime']), listings))
+    startTimes = list(map(lambda x : int(x['protocol_data']['parameters']['startTime']), listings))
 
     currentTime = time()
 
