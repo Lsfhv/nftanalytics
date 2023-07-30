@@ -10,8 +10,8 @@ class Collection:
     # https://docs.opensea.io/reference/retrieve-all-listings
     retrieveAllListings = lambda slug: f"listings/collection/{slug}/all"
     limit = "50"
+    lastUpdated = None
 
-    
     def __init__(self, slug):
         self.slug = slug
         self.uniqueListings = self.getUniqueListings()
@@ -62,6 +62,10 @@ class Collection:
 
         return result
     
+
+    """
+    How many listings were made in the past [...]
+    """
     def listedInPast(self, interval):
         listings = self.uniqueListings
         startTimes = list(map(lambda x : int(x['protocol_data']['parameters']['startTime']), listings))

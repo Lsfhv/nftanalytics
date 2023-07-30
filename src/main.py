@@ -2,11 +2,7 @@ from sys import argv
 
 from intervals import *
 
-# from analytics.listedInPast import listedInPast
-# from analytics.numberListed import getUniqueListings
-# from analytics.listedInPast import *
-
-from analytics.numberListed import Collection
+from analytics.collection import Collection
 
 
 slug = argv[1]

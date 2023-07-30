@@ -2,7 +2,7 @@
 Compute how many were listed between.
 """
 
-from analytics.numberListed import getAllListings
+from analytics.collection import getAllListings
 from analytics.epoch import epochToX
 from time import time
 
