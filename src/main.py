@@ -19,6 +19,4 @@ chain = argv[3]
 # print(x)
 # # print(f"{x} listed in past {intervalToString(WEEK)} [{(x/total)*100}]%")
 
-collection = Collection(slug)
-
-print(collection.listedInPast(SIXHOURS))
+collection = Collection(slug, address)

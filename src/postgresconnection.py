@@ -1,6 +1,6 @@
 import psycopg2
 
-from src.postgresconfig import *
+from postgresconfig import *
 
 class PostgresConnection:
     def __init__(self):
@@ -15,7 +15,7 @@ class PostgresConnection:
         connection = psycopg2.connect(database=self.db, user=self.user, password='', host=self.host, port=self.port)
         return connection
     
-    def execute(self, sql):
+    def insert(self, sql):
         cursor = self.connection.cursor()
         cursor.execute(sql)
         self.connection.commit()

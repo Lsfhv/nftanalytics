@@ -4,19 +4,36 @@ within past day/week/month.
 
 from request.getRequest import get
 from time import time
+# from src.postgresconnection import PostgresConnection
+from postgresconnection import PostgresConnection
 
 class Collection:
 
     # https://docs.opensea.io/reference/retrieve-all-listings
     retrieveAllListings = lambda slug: f"listings/collection/{slug}/all"
+    stats = lambda slug: f"collection/{slug}/stats"
     limit = "50"
     lastUpdated = None
 
-    def __init__(self, slug):
+    def __init__(self, slug, address):
         self.slug = slug
-        self.uniqueListings = self.getUniqueListings()
+        self.address = address
 
-        self.numberOfListings = len(self.uniqueListings)
+        self.existsInDB()
+
+        # if not self.existsInDBAndBeenUpdatedInPastXMins():
+        #     floorPrice = self.getFloor()
+
+
+        # PostgresConnection().readonly(f"")
+
+        # self.uniqueListings = self.getUniqueListings()
+
+        # self.numberOfListings = len(self.uniqueListings)
+
+    def getFloor(self):
+        endpoint = Collection.stats(self.slug)
+        return get(endpoint)['stats']['floor_price']
 
     """
     Returns all listings. 
@@ -80,6 +97,35 @@ class Collection:
                 result += 1
 
         return result
+    
+    """
+    Checks if this collection already exists in the db. 
+    If it does then it checks if hasnt been updated recently.
+    Return false means that the api will be called and db will be updated.
+    Return true means that db wont be updated as it was already updated recently (Recently meaning 5 minutes).
+    """
+    def existsInDBAndBeenUpdatedInPastXMins(self):
+        response = PostgresConnection().readonly(f"select last_updated from collections where slug = '{self.slug}'")
+        if len(response) == 0: return False
+        else:
+            lastUpdated = response[0][0]
+            currentTime = time()
+
+            if (lastUpdated == None) or (lastUpdated + (60 * 5) <= currentTime) :
+                return False
+            return True
+
+    def existsInDB(self):
+        response = PostgresConnection().readonly(f"select 1 from collections where slug='{self.slug}'")
+        
+        if len(response) == 0:
+            return False
+        else: 
+            if response[0][0] == 1: 
+                return True
+        return False
+        
+
         
 
 
