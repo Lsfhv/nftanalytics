@@ -29,22 +29,24 @@ class Collection:
         self.address = address
         self.chain = chain
 
-        if (not self.existsInDB()) or (not self.existsInDBAndBeenUpdatedInPastXMins()):
-            self.refresh()
-        else:
-            print("Nothing")
+        self.refresh()
             
     def refresh(self):
-        Collection.uniqueListings = self.getUniqueListings()
-        Collection.stats = self.getStats()
-        Collection.listedInPastX = self.getListedInPastX()
-        Collection.lastUpdated = time()
 
-        if not self.existsInDB():
-            PostgresConnection().insert(f"insert into collections values ('{self.address}', '{self.slug}', '{self.chain}', {self.stats['floor_price']}, {len(self.uniqueListings)}, {self.stats['total_supply']}, {self.listedInPastX[0]}, {self.listedInPastX[1]}, {self.listedInPastX[2]}, {self.listedInPastX[3]}, {self.listedInPastX[4]}, {self.listedInPastX[5]}, 'opensea', {self.lastUpdated})")
-        elif not self.existsInDBAndBeenUpdatedInPastXMins():
-            sql = f"update collections set floor = {self.stats['floor_price']}, total_listed = {len(self.uniqueListings)}, total_supply={self.stats['total_supply']}, last_updated = {self.lastUpdated}, total_listed_in_past_minute = {self.listedInPastX[0]}, total_listed_in_past_hour={self.listedInPastX[1]}, total_listed_in_past_6hours={self.listedInPastX[2]}, total_listed_in_past_12hours={self.listedInPastX[3]}, total_listed_in_past_day={self.listedInPastX[4]}, total_listed_in_past_week={self.listedInPastX[5]} where address = '{self.address}'"
-            PostgresConnection().insert(sql)
+        if (not self.existsInDB()) or (not self.existsInDBAndBeenUpdatedInPastXMins()):
+            Collection.uniqueListings = self.getUniqueListings()
+            Collection.stats = self.getStats()
+            Collection.listedInPastX = self.getListedInPastX()
+            Collection.lastUpdated = time()
+
+            if not self.existsInDB():
+                PostgresConnection().insert(f"insert into collections values ('{self.address}', '{self.slug}', '{self.chain}', {self.stats['floor_price']}, {len(self.uniqueListings)}, {self.stats['total_supply']}, {self.listedInPastX[0]}, {self.listedInPastX[1]}, {self.listedInPastX[2]}, {self.listedInPastX[3]}, {self.listedInPastX[4]}, {self.listedInPastX[5]}, 'opensea', {self.lastUpdated})")
+            elif not self.existsInDBAndBeenUpdatedInPastXMins():
+                sql = f"update collections set floor = {self.stats['floor_price']}, total_listed = {len(self.uniqueListings)}, total_supply={self.stats['total_supply']}, last_updated = {self.lastUpdated}, total_listed_in_past_minute = {self.listedInPastX[0]}, total_listed_in_past_hour={self.listedInPastX[1]}, total_listed_in_past_6hours={self.listedInPastX[2]}, total_listed_in_past_12hours={self.listedInPastX[3]}, total_listed_in_past_day={self.listedInPastX[4]}, total_listed_in_past_week={self.listedInPastX[5]} where address = '{self.address}'"
+                PostgresConnection().insert(sql)
+        else:
+            print("Nothing, already been updated in the past 5 minutes!")
+  
 
     def getStats(self):
         endpoint = Collection.retrieveStats(self.slug)

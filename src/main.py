@@ -21,3 +21,9 @@ address = '0x1a92f7381b9f03921564a437210bb9396471050c'
 # # print(f"{x} listed in past {intervalToString(WEEK)} [{(x/total)*100}]%")
 
 collection = Collection(slug, address)
+
+while True:
+    cmd = input()
+
+    if cmd == 'refresh':
+        collection.refresh()
