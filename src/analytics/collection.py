@@ -6,35 +6,50 @@ from request.getRequest import get
 from time import time
 # from src.postgresconnection import PostgresConnection
 from postgresconnection import PostgresConnection
+from intervals import intervals
 
 class Collection:
 
     # https://docs.opensea.io/reference/retrieve-all-listings
     retrieveAllListings = lambda slug: f"listings/collection/{slug}/all"
-    stats = lambda slug: f"collection/{slug}/stats"
-    limit = "50"
-    lastUpdated = None
+    retrieveStats = lambda slug: f"collection/{slug}/stats"
 
-    def __init__(self, slug, address):
+    limit = "50"
+    timer = 5
+
+    lastUpdated = None # Time of last update
+
+    uniqueListings = None
+    stats = None
+    listedInPastX = None
+    
+
+    def __init__(self, slug, address, chain='ethereum'):
         self.slug = slug
         self.address = address
+        self.chain = chain
 
-        self.existsInDB()
+        if (not self.existsInDB()) or (not self.existsInDBAndBeenUpdatedInPastXMins()):
+            self.refresh()
+        else:
+            print("Nothing")
+            
+    def refresh(self):
+        Collection.uniqueListings = self.getUniqueListings()
+        Collection.stats = self.getStats()
+        Collection.listedInPastX = self.getListedInPastX()
+        Collection.lastUpdated = time()
 
-        # if not self.existsInDBAndBeenUpdatedInPastXMins():
-        #     floorPrice = self.getFloor()
+        if not self.existsInDB():
+            PostgresConnection().insert(f"insert into collections values ('{self.address}', '{self.slug}', '{self.chain}', {self.stats['floor_price']}, {len(self.uniqueListings)}, {self.stats['total_supply']}, {self.listedInPastX[0]}, {self.listedInPastX[1]}, {self.listedInPastX[2]}, {self.listedInPastX[3]}, {self.listedInPastX[4]}, {self.listedInPastX[5]}, 'opensea', {self.lastUpdated})")
+        elif not self.existsInDBAndBeenUpdatedInPastXMins():
+            sql = f"update collections set floor = {self.stats['floor_price']}, total_listed = {len(self.uniqueListings)}, total_supply={self.stats['total_supply']}, last_updated = {self.lastUpdated}, total_listed_in_past_minute = {self.listedInPastX[0]}, total_listed_in_past_hour={self.listedInPastX[1]}, total_listed_in_past_6hours={self.listedInPastX[2]}, total_listed_in_past_12hours={self.listedInPastX[3]}, total_listed_in_past_day={self.listedInPastX[4]}, total_listed_in_past_week={self.listedInPastX[5]} where address = '{self.address}'"
+            PostgresConnection().insert(sql)
 
-
-        # PostgresConnection().readonly(f"")
-
-        # self.uniqueListings = self.getUniqueListings()
-
-        # self.numberOfListings = len(self.uniqueListings)
-
-    def getFloor(self):
-        endpoint = Collection.stats(self.slug)
-        return get(endpoint)['stats']['floor_price']
-
+    def getStats(self):
+        endpoint = Collection.retrieveStats(self.slug)
+        return get(endpoint)['stats']
+    
     """
     Returns all listings. 
     It can be the case that there are multiple listings for a single nft.
@@ -83,19 +98,24 @@ class Collection:
     """
     How many listings were made in the past [...]
     """
-    def listedInPast(self, interval):
+    def getListedInPastX(self):
         listings = self.uniqueListings
         startTimes = list(map(lambda x : int(x['protocol_data']['parameters']['startTime']), listings))
-
+        startTimes.sort(reverse = True)
         currentTime = time()
 
-        bound = currentTime - interval
-        
-        result = 0
-        for i in startTimes:
-            if i >= bound:
-                result += 1
-
+        result = []
+        pointer = 0
+        for i in range(0, len(intervals)):
+            bound = currentTime - intervals[i]
+            
+            while pointer < len(startTimes):
+                if startTimes[pointer] >= bound:
+                    pointer += 1
+                else:
+                    break
+            result.append(pointer)
+                    
         return result
     
     """
@@ -111,7 +131,7 @@ class Collection:
             lastUpdated = response[0][0]
             currentTime = time()
 
-            if (lastUpdated == None) or (lastUpdated + (60 * 5) <= currentTime) :
+            if (lastUpdated == None) or (lastUpdated + (60 * Collection.timer) <= currentTime):
                 return False
             return True
 
@@ -124,87 +144,4 @@ class Collection:
             if response[0][0] == 1: 
                 return True
         return False
-        
-
-        
-
-
-# LIMIT = "50"
-# HOUR = "HOUR"
-
-
-# """
-# Gets the total nft count for a collection.
-# https://docs.opensea.io/v1.0/reference/retrieving-collection-stats
-# """
-# def getTotalItems(slug):
-#     url = f"collection/{slug}/stats"
-#     return get(url)['stats']['total_supply']
-
-# """
-# https://docs.opensea.io/reference/retrieve-nfts-by-contract
-
-# Returns a list of token ids.
-# """
-# def getIds(address, chain):
-#     endpoint = f"""chain/{chain}/contract/{address}/nfts"""
-
-#     params = {"limit": LIMIT}
-
-#     response = get(endpoint, v2 = True, params = params)
-#     items =[]
-#     print("Getting nft ids ... ")
-#     while 'next' in response:
-#         items += list(map(lambda x: int(x['identifier']), response['nfts']))
-
-#         params['next'] = response['next']
-#         response = get(endpoint, v2 = True, params = params)   
-
-#     items += list(map(lambda x: int(x['identifier']), response['nfts']))
-
-#     print("Finished")
-
-#     return items
-
-# """
-# Returns all listings. 
-# It can be the case that there are multiple listings for a single nft.
-# """
-# def getAllListings(slug):
-#     endpoint = f"listings/collection/{slug}/all"
-
-#     print(f"Getting all listings for {slug} ... ")
-
-#     items = []
-#     params = {"limit":LIMIT}
-#     response =  get(endpoint, v2 = True, params = params)    
-
-#     while 'next' in response:
-#         items += response['listings']
-
-#         params['next'] = response['next']
-#         response = get(endpoint, v2 = True, params = params)
-
-#     response = response['listings']
-#     items += response
-
-#     print(f"Finished getting all listings for {slug}")
-
-#     return items
-
-# """
-# Gets the newest listing for each nft.
-# """
-# def getUniqueListings(slug):
-#     listings = getAllListings(slug)
-
-#     seen = set()
-#     result = []
-#     for i in range(len(listings) - 1, -1, - 1):
-#         currentListing = listings[i]
-#         currentId = listings[i]['protocol_data']['parameters']['offer'][0]['identifierOrCriteria']
-#         if currentId not in seen:
-#             seen.add(currentId)
-#             result.append(listings[i])
-
-#     return result
+    

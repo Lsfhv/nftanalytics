@@ -9,6 +9,8 @@ TWELVEHOURS = HOUR * 12
 DAY = HOUR * 24
 WEEK = DAY * 7
 
+intervals = [MINUTE, HOUR, SIXHOURS, TWELVEHOURS, DAY, WEEK]
+
 def intervalToString(interval):
     if interval == 60: return "minute"
     elif interval == 60 * 60: return "hour"

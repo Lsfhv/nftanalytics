@@ -6,8 +6,9 @@ from analytics.collection import Collection
 
 
 slug = argv[1]
-address = argv[2]
-chain = argv[3]
+# address = argv[2]
+# chain = argv[3]
+address = '0x1a92f7381b9f03921564a437210bb9396471050c'
 
 # uniqueListings = len(getUniqueListings(slug))
 

@@ -6,6 +6,8 @@ create table collections (
     chain VARCHAR(200),
     floor numeric, 
     total_listed int, 
+    total_supply int, -- How many nfts in a collection
+    total_listed_in_past_minute int,
     total_listed_in_past_hour int, 
     total_listed_in_past_6hours int,
     total_listed_in_past_12hours int,
