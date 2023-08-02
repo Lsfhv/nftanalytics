@@ -4,20 +4,19 @@ within past day/week/month.
 
 from request.getRequest import get
 from time import time
-# from src.postgresconnection import PostgresConnection
+
 from postgresconnection import PostgresConnection
 from intervals import intervals
 
 class Collection:
 
-    # https://docs.opensea.io/reference/retrieve-all-listings
     retrieveAllListings = lambda slug: f"listings/collection/{slug}/all"
     retrieveStats = lambda slug: f"collection/{slug}/stats"
 
     limit = "50"
     timer = 5
 
-    lastUpdated = None # Time of last update
+    lastUpdated = None # Time of last update in epoch time
 
     uniqueListings = None
     stats = None
@@ -26,19 +25,18 @@ class Collection:
 
     def __init__(self, slug, address, chain='ethereum'):
         self.slug = slug
-        self.address = address
+        self.address = address.lower()
         self.chain = chain
 
         # self.refresh()
             
     def refresh(self):
-
         if (not self.existsInDB()) or (not self.existsInDBAndBeenUpdatedInPastXMins()):
+            Collection.lastUpdated = time()
             Collection.uniqueListings = self.getUniqueListings()
             Collection.stats = self.getStats()
             Collection.listedInPastX = self.getListedInPastX()
-            Collection.lastUpdated = time()
-
+            
             if not self.existsInDB():
                 PostgresConnection().insert(f"insert into collections values ('{self.address}', '{self.slug}', '{self.chain}', {self.stats['floor_price']}, {len(self.uniqueListings)}, {self.stats['total_supply']}, {self.listedInPastX[0]}, {self.listedInPastX[1]}, {self.listedInPastX[2]}, {self.listedInPastX[3]}, {self.listedInPastX[4]}, {self.listedInPastX[5]}, 'opensea', {self.lastUpdated})")
             elif not self.existsInDBAndBeenUpdatedInPastXMins():
