@@ -27,8 +27,6 @@ class Collection:
         self.slug = slug
         self.address = address.lower()
         self.chain = chain
-
-        # self.refresh()
             
     def refresh(self):
         if (not self.existsInDB()) or (not self.existsInDBAndBeenUpdatedInPastXMins()):

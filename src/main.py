@@ -4,7 +4,6 @@ from intervals import *
 
 from analytics.collection import Collection
 
-# from multiprocessing import Process
 from threading import Thread
 from time import sleep
 
