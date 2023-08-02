@@ -29,7 +29,7 @@ class Collection:
         self.address = address
         self.chain = chain
 
-        self.refresh()
+        # self.refresh()
             
     def refresh(self):
 

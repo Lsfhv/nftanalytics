@@ -4,26 +4,45 @@ from intervals import *
 
 from analytics.collection import Collection
 
+# from multiprocessing import Process
+from threading import Thread
+from time import sleep
 
-slug = argv[1]
-# address = argv[2]
-# chain = argv[3]
-address = '0x1a92f7381b9f03921564a437210bb9396471050c'
+monitoring = set()
+collections = []
 
-# uniqueListings = len(getUniqueListings(slug))
+def monitor(collection):
+    while True:
+        collection.refresh()
+        print("Sleeping for 5 mins ... ")
+        sleep(60 * 5)
 
-# print(uniqueListings)
 
-# # total = getTotalItems(slug)
-
-# x = listedInPast(SIXHOURS, slug)
-# print(x)
-# # print(f"{x} listed in past {intervalToString(WEEK)} [{(x/total)*100}]%")
-
-collection = Collection(slug, address)
-
+# Main program loop
 while True:
+    print("Ready for input: ")
     cmd = input()
 
-    if cmd == 'refresh':
-        collection.refresh()
+    if cmd == "add":
+        print("Enter slug and address: ")
+        slug = input()
+        address = input()
+
+        if slug not in monitoring:
+            monitoring.add(slug)
+
+            collection = Collection(slug, address)
+
+            t = Thread(target=monitor, args=[collection])
+            t.start()
+
+        else:
+            print("Already monitoring this collection!")
+
+
+
+    
+
+
+
+
