@@ -13,19 +13,21 @@ collections = []
 def monitor(collection):
     while True:
         collection.refresh()
-        print("Sleeping for 5 mins ... ")
         sleep(60 * 5)
 
 
 # Main program loop
 while True:
-    print("Ready for input: ")
+    print('> ', end='')
     cmd = input()
 
     if cmd == "add":
         print("Enter slug and address: ")
+        print('> ',end='')
         slug = input()
+        print('> ',end='')
         address = input()
+        
 
         if slug not in monitoring:
             monitoring.add(slug)

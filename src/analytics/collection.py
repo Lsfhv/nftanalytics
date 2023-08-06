@@ -8,6 +8,8 @@ from time import time
 from postgresconnection import PostgresConnection
 from intervals import intervals
 
+from datetime import datetime
+
 class Collection:
 
     retrieveAllListings = lambda slug: f"listings/collection/{slug}/all"
@@ -54,8 +56,8 @@ class Collection:
     """
     def getAllListings(self):
         endpoint = Collection.retrieveAllListings(self.slug)
-
-        print(f"Getting all listings for {self.slug} ... ")
+        dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        print(f"Getting all listings for {self.slug} [{dt_string}]... ")
 
         items = []
 
@@ -71,7 +73,8 @@ class Collection:
         response = response['listings']
         items += response
 
-        print(f"Finished getting all listings for {self.slug}")
+        dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        print(f"Finished getting all listings for {self.slug} [{dt_string}]")
 
         return items
     
