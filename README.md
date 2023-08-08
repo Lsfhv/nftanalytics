@@ -1,5 +1,8 @@
 # nftanalytics
-Nft analytic
+
+A background service that collects analytics about NFT collections. 
+
+
 
 
 

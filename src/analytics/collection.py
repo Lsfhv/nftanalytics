@@ -31,6 +31,7 @@ class Collection:
         self.slug = slug
         self.address = address.lower()
         self.chain = chain
+        self.delay = 60*60
 
         if (not self.existsInDB()):
             self.refresh()
@@ -43,7 +44,7 @@ class Collection:
             
             sql = insertG('analytics', self.toAnalytics())
             PostgresConnection().insert(sql)
-            sleep(60 * 1)
+            sleep(self.delay)
     
     """
     Returns all the data that will be posted to DB.
