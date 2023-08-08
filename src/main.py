@@ -34,7 +34,7 @@ while True:
 
             collection = Collection(slug, address)
 
-            t = Thread(target=monitor, args=[collection])
+            t = Thread(target=collection.start)
             t.start()
 
         else:
