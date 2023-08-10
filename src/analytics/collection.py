@@ -42,19 +42,15 @@ class Collection:
     Deletes entries in analytics after a certain amount of time.
     """
     def clean(self):
-       
-        
-        pass
+        PostgresConnection().insert(f"delete from analytics where last_updated <= {Collection.lastUpdated - 60*60*24*7*4}")
 
     def start(self):
-        from multiprocessing import Process
-        p = Process(target=self.clean)
-        p.start()
         while True:
             self.refresh()
             
             sql = insertG('analytics', self.toAnalytics())
             PostgresConnection().insert(sql)
+            self.clean()
             sleep(self.delay)
     
     """
