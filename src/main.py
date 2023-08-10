@@ -4,7 +4,7 @@ from intervals import *
 
 from analytics.collection import Collection
 
-from threading import Thread
+from multiprocessing import Process
 from time import sleep
 
 monitoring = set()
@@ -16,29 +16,32 @@ def monitor(collection):
         sleep(60 * 5)
 
 
-# Main program loop
-while True:
-    print('> ', end='')
-    cmd = input()
+if __name__ == '__main__':
+    # Main program loop
+    while True:
+        print("WELCOME")
+        print('> ', end='')
+        cmd = input()
 
-    if cmd == "add":
-        print("Enter slug and address: ")
-        print('> ',end='')
-        slug = input()
-        print('> ',end='')
-        address = input()
-        
+        if cmd == "add":
+            print("Enter slug and address: ")
+            print('> ',end='')
+            slug = input()
+            print('> ',end='')
+            address = input()
+            
 
-        if slug not in monitoring:
-            monitoring.add(slug)
+            if slug not in monitoring:
+                monitoring.add(slug)
 
-            collection = Collection(slug, address)
+                collection = Collection(slug, address)
 
-            t = Thread(target=collection.start)
-            t.start()
+                p = Process(target=collection.start)
+                p.start()
+                print(p.pid)
 
-        else:
-            print("Already monitoring this collection!")
+            else:
+                print("Already monitoring this collection!")
 
 
 

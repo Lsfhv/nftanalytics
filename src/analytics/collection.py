@@ -38,7 +38,18 @@ class Collection:
             sql = insertG('collections', self.toCollections())
             PostgresConnection().insert(sql)
 
+    """
+    Deletes entries in analytics after a certain amount of time.
+    """
+    def clean(self):
+       
+        
+        pass
+
     def start(self):
+        from multiprocessing import Process
+        p = Process(target=self.clean)
+        p.start()
         while True:
             self.refresh()
             
