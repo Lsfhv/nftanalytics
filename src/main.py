@@ -19,15 +19,15 @@ def monitor(collection):
 if __name__ == '__main__':
     # Main program loop
     while True:
-        print("WELCOME")
-        print('> ', end='')
+        # print('> ', end='')
+        print("again")
         cmd = input()
 
         if cmd == "add":
             print("Enter slug and address: ")
-            print('> ',end='')
+            # print('> ',end='')
             slug = input()
-            print('> ',end='')
+            # print('> ',end='')
             address = input()
             
 
@@ -38,7 +38,6 @@ if __name__ == '__main__':
 
                 p = Process(target=collection.start)
                 p.start()
-                print(p.pid)
 
             else:
                 print("Already monitoring this collection!")

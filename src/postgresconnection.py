@@ -25,5 +25,5 @@ class PostgresConnection:
     def readonly(self, sql):
         cursor = self.connection.cursor()
         cursor.execute(sql)
-
+        
         return cursor.fetchall()

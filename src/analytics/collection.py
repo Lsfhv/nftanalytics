@@ -42,7 +42,7 @@ class Collection:
     Deletes entries in analytics after a certain amount of time.
     """
     def clean(self):
-        PostgresConnection().insert(f"delete from analytics where last_updated <= {Collection.lastUpdated - 60*60*24*7*4}")
+        PostgresConnection().insert(f"delete from analytics where last_updated <= {Collection.lastUpdated - 60*60*24*7*4} and address='{self.address}'")
 
     def start(self):
         while True:
