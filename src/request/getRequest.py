@@ -1,5 +1,5 @@
 """
-Handles all HTTP requests to be made. 
+Handles all HTTP get requests to be made. 
 """
 
 import requests
@@ -27,15 +27,12 @@ Get Request.
 v2 = False, v1 api used.
 v2 = True, v2 api used.
 """
-def get(endpoint, v2 = False, params={}):
-    url = f"""{(lambda x: baseEndpointV2 if x == True else baseEndpointV1)(v2)}/{endpoint}"""
+def get(url, endpoint, params = {}, headers = {}):
+    if endpoint != "":
+        url = f"""{url}/{endpoint}"""
 
     url += generateParams(params)
     
-    headers = {
-        "accept":  "application/json",
-        "X-API-KEY": f"{openseaKey}"
-    }
     response = requests.get(url, headers = headers)
 
     while response.status_code != 200:
@@ -44,4 +41,4 @@ def get(endpoint, v2 = False, params={}):
         response = requests.get(url, headers = headers)
         
 
-    return response.json()
+    return response

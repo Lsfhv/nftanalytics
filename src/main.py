@@ -6,6 +6,7 @@ from analytics.collection import Collection
 
 from multiprocessing import Process
 from time import sleep
+import analytics.globalMarket
 
 monitoring = set()
 collections = []
@@ -16,31 +17,33 @@ def monitor(collection):
         sleep(60 * 5)
 
 
-if __name__ == '__main__':
-    # Main program loop
-    while True:
-        # print('> ', end='')
-        print("again")
-        cmd = input()
 
-        if cmd == "add":
-            print("Enter slug and address: ")
-            # print('> ',end='')
-            slug = input()
-            # print('> ',end='')
-            address = input()
+
+# if __name__ == '__main__':
+#     # Main program loop
+#     while True:
+#         # print('> ', end='')
+#         print("again")
+#         cmd = input()
+
+#         if cmd == "add":
+#             print("Enter slug and address: ")
+#             # print('> ',end='')
+#             slug = input()
+#             # print('> ',end='')
+#             address = input()
             
 
-            if slug not in monitoring:
-                monitoring.add(slug)
+#             if slug not in monitoring:
+#                 monitoring.add(slug)
 
-                collection = Collection(slug, address)
+#                 collection = Collection(slug, address)
 
-                p = Process(target=collection.start)
-                p.start()
+#                 p = Process(target=collection.start)
+#                 p.start()
 
-            else:
-                print("Already monitoring this collection!")
+#             else:
+#                 print("Already monitoring this collection!")
 
 
 

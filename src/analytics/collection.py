@@ -11,6 +11,7 @@ from intervals import intervals
 from datetime import datetime
 from sql.sqlQGenerator import insertG, updateG
 from time import sleep
+from keys import openseaBaseEndpointV1, openseaBaseEndpointV2, openseaHeaders
 
 class Collection:
 
@@ -89,7 +90,7 @@ class Collection:
 
     def getStats(self):
         endpoint = Collection.retrieveStats(self.slug)
-        return get(endpoint)['stats']
+        return get(openseaBaseEndpointV1, endpoint, headers = openseaHeaders).json()['stats']
     
     """
     Returns all listings. 
@@ -103,13 +104,13 @@ class Collection:
         items = []
 
         params = {"limit": Collection.limit}
-        response =  get(endpoint, v2 = True, params = params)    
+        response =  get(openseaBaseEndpointV2, endpoint, params = params, headers = openseaHeaders).json()    
 
         while 'next' in response:
             items += response['listings']
 
             params['next'] = response['next']
-            response = get(endpoint, v2 = True, params = params)
+            response = get(openseaBaseEndpointV2, endpoint, params = params, headers = openseaHeaders).json()
 
         response = response['listings']
         items += response
