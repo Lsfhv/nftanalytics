@@ -18,7 +18,8 @@ def start():
         if block['number'] != lastBlock:
             for i in block['transactions']:
                 if web3.eth.get_transaction_receipt(i)['contractAddress'] != None:
-
+                    get(openseaBaseEndpointV1, f"chain/ethereum/contract/{web3.eth.get_transaction_receipt(i)['contractAddress']}")
+                    pass
             lastBlock = block['number']
 
 

@@ -32,7 +32,7 @@ class Collection:
         self.slug = slug
         self.address = address.lower()
         self.chain = chain
-        self.delay = 60*60
+        self.delay = 60
 
         if (not self.existsInDB()):
             self.refresh()
@@ -49,13 +49,25 @@ class Collection:
         while True:
             self.refresh()
             
+            PostgresConnection().insert(updateG('collections', ("address", self.address), self.toUpdateCollections()))
+
             sql = insertG('analytics', self.toAnalytics())
             PostgresConnection().insert(sql)
             self.clean()
             sleep(self.delay)
+
+
+    # Data to be updated on the collections table.
+    def toUpdateCollections(self):
+        return [
+            ('floor', self.stats['floor_price']), 
+            ('total_listed', len(self.uniqueListings)),
+            ('total_supply', self.stats['total_supply']),
+            ('last_updated', self.lastUpdated)
+        ]
     
     """
-    Returns all the data that will be posted to DB.
+    Returns all the data that will be posted to DB on first time this collection is monitored.
     """
     def toCollections(self):
         return [
@@ -68,6 +80,7 @@ class Collection:
             self.lastUpdated
         ]
         
+    # Data to be posted to analytics table.
     def toAnalytics(self):
         return [
             self.address, 
@@ -82,6 +95,7 @@ class Collection:
             Collection.lastUpdated
         ]
            
+    # Refresh the data.
     def refresh(self):
         Collection.lastUpdated = time()
         Collection.uniqueListings = self.getUniqueListings()
@@ -161,24 +175,8 @@ class Collection:
                     
         return result
     
-    """
-    Checks if this collection already exists in the db. 
-    If it does then it checks if hasnt been updated recently.
-    Return false means that the api will be called and db will be updated.
-    Return true means that db wont be updated as it was already updated recently (Recently meaning 5 minutes).
-    """
-    def existsInDBAndBeenUpdatedInPastXMins(self):
-        response = PostgresConnection().readonly(f"select last_updated from collections where slug = '{self.slug}'")
-        if len(response) == 0: return False
-        else:
-            lastUpdated = response[0][0]
-            currentTime = time()
-
-            if (lastUpdated == None) or (lastUpdated + (60 * Collection.timer) <= currentTime):
-                return False
-            return True
-
-    def existsInDB(self):
+    # Check if this collection exists in the collections table.
+    def existsInDB(self) -> bool:
         response = PostgresConnection().readonly(f"select 1 from collections where slug='{self.slug}'")
         
         if len(response) == 0:

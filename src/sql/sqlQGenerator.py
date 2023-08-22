@@ -15,8 +15,10 @@ def insertG(table, args):
 Update query
 
 Args must be tuples (a,b)
+('address', 10) -> address=10
+[('x', 10), ('y', 20)] -> x=10, y=20
 """
-def updateG(table,condition, args):
+def updateG(table, condition, args):
     return f"update {table} set {reduce(tupleToString, args, '')[:-1]} where {tupleToString('', condition)[:-1]}"
 
 
