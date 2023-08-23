@@ -152,7 +152,6 @@ class Collection:
 
         return result
     
-
     """
     How many listings were made in the past [...]
     """
