@@ -12,6 +12,8 @@ from datetime import datetime
 from sql.sqlQGenerator import insertG, updateG
 from time import sleep
 from keys import openseaBaseEndpointV1, openseaBaseEndpointV2, openseaHeaders
+from intervals import HOUR
+from plotting.plot import p
 
 class Collection:
 
@@ -27,12 +29,11 @@ class Collection:
     stats = None
     listedInPastX = None
     
-
     def __init__(self, slug, address, chain='ethereum'):
         self.slug = slug
         self.address = address.lower()
         self.chain = chain
-        self.delay = 60
+        self.delay = HOUR
 
         if (not self.existsInDB()):
             self.refresh()
@@ -186,3 +187,11 @@ class Collection:
                 return True
         return False
     
+    # [a,b]
+    def plotFloorPrice(self, a, b = time()):
+        response = PostgresConnection().readonly(f"select floor, last_updated from analytics where address='{self.address}' and last_updated>={b-a} and last_updated<={b}")
+        floor = list(map(lambda x: x[0], response))
+        time = list(map(lambda x: x[1], response))
+        # print(x,y)
+        # print(y,x)
+        p(time,floor)

@@ -15,21 +15,14 @@ def monitor(collection):
     while True:
         collection.refresh()
 
-
-
-
 if __name__ == '__main__':
     # Main program loop
     while True:
-        # print('> ', end='')
-        # print("again")
         cmd = input()
 
         if cmd == "add":
             print("Enter slug and address: ")
-            # print('> ',end='')
             slug = input()
-            # print('> ',end='')
             address = input()
             
 
@@ -43,6 +36,7 @@ if __name__ == '__main__':
 
             else:
                 print("Already monitoring this collection!")
+
 
 
 

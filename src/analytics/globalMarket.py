@@ -9,18 +9,17 @@ from request.getRequest import get
 lastBlock = None
 
 web3 = Web3(Web3.HTTPProvider(infuraUrl))
-
-def start():
-
-    while True:
-        block = web3.eth.get_block('latest')
-
-        if block['number'] != lastBlock:
-            for i in block['transactions']:
-                if web3.eth.get_transaction_receipt(i)['contractAddress'] != None:
-                    get(openseaBaseEndpointV1, f"chain/ethereum/contract/{web3.eth.get_transaction_receipt(i)['contractAddress']}")
-                    pass
-            lastBlock = block['number']
+# print(web3.eth.get_block(1000000000000))
+# def start():
+#     while True:
+#         block = web3.eth.get_block('latest')
+#         # web3.eth.get_block()
+#         if block['number'] != lastBlock:
+#             for i in block['transactions']:
+#                 if web3.eth.get_transaction_receipt(i)['contractAddress'] != None:
+#                     get(openseaBaseEndpointV1, f"chain/ethereum/contract/{web3.eth.get_transaction_receipt(i)['contractAddress']}")
+#                     pass
+#             lastBlock = block['number']
 
 
 

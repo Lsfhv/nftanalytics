@@ -1,3 +1,4 @@
 requests
 psycopg2 
 web3
+urllib3==1.26.12
