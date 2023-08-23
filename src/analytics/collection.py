@@ -6,7 +6,7 @@ from request.getRequest import get
 from time import time
 
 from postgresconnection import PostgresConnection
-from intervals import intervals
+from intervals import intervals, Interval
 
 from datetime import datetime
 from sql.sqlQGenerator import insertG, updateG
@@ -187,11 +187,11 @@ class Collection:
                 return True
         return False
     
-    # [a,b]
-    def plotFloorPrice(self, a, b = time()):
+    # Plot floor between [a,b]
+    def plotFloorPrice(self, a: Interval, b = time()):
         response = PostgresConnection().readonly(f"select floor, last_updated from analytics where address='{self.address}' and last_updated>={b-a} and last_updated<={b}")
         floor = list(map(lambda x: x[0], response))
         time = list(map(lambda x: x[1], response))
-        # print(x,y)
-        # print(y,x)
-        p(time,floor)
+
+
+        p(time,floor, self.slug)

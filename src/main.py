@@ -9,14 +9,8 @@ from time import sleep
 # import analytics.globalMarket
 
 monitoring = set()
-collections = []
-
-def monitor(collection):
-    while True:
-        collection.refresh()
 
 if __name__ == '__main__':
-    # Main program loop
     while True:
         cmd = input()
 
@@ -33,7 +27,7 @@ if __name__ == '__main__':
 
                 p = Process(target=collection.start)
                 p.start()
-
+                
             else:
                 print("Already monitoring this collection!")
 

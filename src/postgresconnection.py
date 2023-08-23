@@ -1,13 +1,12 @@
 import psycopg2
-
-from postgresconfig import *
+import os
 
 class PostgresConnection:
     def __init__(self):
-        self.host = host
-        self.port = port
-        self.user = user
-        self.db = db
+        self.host = os.environ['PGSQLHOST']
+        self.port = os.environ['PGSQLPORT']
+        self.user = os.environ['USER']
+        self.db = os.environ['PGSQLDB']
 
         self.connection = self.connect()
 
