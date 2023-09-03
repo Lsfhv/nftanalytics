@@ -3,12 +3,12 @@ from sys import argv
 from intervals import *
 
 from analytics.collection import Collection
-
+from threading import Thread
 from multiprocessing import Process
 from time import sleep
 # import analytics.globalMarket
 
-monitoring = set()
+monitoring = {}
 
 def processInput():
     cmd = input()
@@ -19,15 +19,21 @@ def processInput():
         address = input()
         
         if slug not in monitoring:
-            monitoring.add(slug)
-
             collection = Collection(slug, address)
-
+            monitoring[slug] = collection
             p = Process(target=collection.start)
             p.start()
             
         else:
             print("Already monitoring this collection!") 
+    elif cmd == 'plot':
+        print("Enter slug: ")
+        slug = input()
+        collection = monitoring[slug]
+        p = Thread(target = collection.plotFloorPrice(MONTH))
+        p.start()
+    else:
+        print('Invalid command')
 
 if __name__ == '__main__':
     f = open('src/input').readlines()
@@ -38,13 +44,13 @@ if __name__ == '__main__':
         address = f[p + 2].strip()
         p += 3
         if slug not in monitoring:
-            monitoring.add(slug)
+            
             collection = Collection(slug, address)
+            monitoring[slug] = collection
             x = Process(target=collection.start)
             x.start()
         else:
             print("Already monitoring this collection")
-    sleep(5)
     while True:
         processInput()
 

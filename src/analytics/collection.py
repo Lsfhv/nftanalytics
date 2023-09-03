@@ -17,8 +17,8 @@ from plotting.plot import p
 
 class Collection:
 
-    retrieveAllListings = lambda slug: f"listings/collection/{slug}/all"
-    retrieveStats = lambda slug: f"collection/{slug}/stats"
+    retrieveAllListingsOS = lambda slug: f"listings/collection/{slug}/all"
+    retrieveStatsOS = lambda slug: f"collection/{slug}/stats"
 
     limit = "50"
     timer = 0
@@ -29,11 +29,11 @@ class Collection:
     stats = None
     listedInPastX = None
     
-    def __init__(self, slug, address, chain='ethereum'):
-        self.slug = slug
-        self.address = address.lower()
-        self.chain = chain
-        self.delay = HOUR
+    def __init__(self, slug: str, address, chain='ethereum'):
+        self.slug: str = slug
+        self.address: str = address.lower()
+        self.chain: str = chain
+        self.delay: Interval = HOUR
 
         if (not self.existsInDB()):
             self.refresh()
@@ -93,7 +93,8 @@ class Collection:
             Collection.listedInPastX[3],
             Collection.listedInPastX[4],
             Collection.listedInPastX[5],
-            Collection.lastUpdated
+            Collection.lastUpdated, 
+            self.stats['num_owners']
         ]
            
     # Refresh the data.
@@ -104,7 +105,7 @@ class Collection:
         Collection.listedInPastX = self.getListedInPastX()
 
     def getStats(self):
-        endpoint = Collection.retrieveStats(self.slug)
+        endpoint = Collection.retrieveStatsOS(self.slug)
         return get(openseaBaseEndpointV1, endpoint, headers = openseaHeaders).json()['stats']
     
     """
@@ -112,7 +113,7 @@ class Collection:
     It can be the case that there are multiple listings for a single nft.
     """
     def getAllListings(self):
-        endpoint = Collection.retrieveAllListings(self.slug)
+        endpoint = Collection.retrieveAllListingsOS(self.slug)
         dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         print(f"Getting all listings for {self.slug} [{dt_string}]... ")
 
@@ -187,10 +188,10 @@ class Collection:
         return False
     
     # Plot floor between [a,b]
-    def plotFloorPrice(self, a: Interval, b = time()):
+    def plotFloorPrice(self, a: Interval, b = time()) -> None:
         response = PostgresConnection().readonly(f"select floor, last_updated from analytics where address='{self.address}' and last_updated>={b-a} and last_updated<={b}")
         floor = list(map(lambda x: x[0], response))
         time = list(map(lambda x: x[1], response))
 
 
-        p(time,floor, self.slug)
+        p(Xaxis = time,Yaxis = floor, title = self.slug)
