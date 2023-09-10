@@ -2,7 +2,7 @@ from sys import argv
 
 from intervals import *
 
-from analytics.collection import Collection
+from analytics.Collections import Collection
 from threading import Thread
 from multiprocessing import Process
 
