@@ -13,7 +13,6 @@ from sql.sqlQGenerator import insertG, updateG
 from time import sleep
 from keys import openseaBaseEndpointV1, openseaBaseEndpointV2, openseaHeaders
 from intervals import HOUR
-from plotting.plot import p
 
 class Collection:
 
@@ -187,11 +186,11 @@ class Collection:
                 return True
         return False
     
-    # Plot floor between [a,b]
-    def plotFloorPrice(self, a: Interval, b = time()) -> None:
-        response = PostgresConnection().readonly(f"select floor, last_updated from analytics where address='{self.address}' and last_updated>={b-a} and last_updated<={b}")
-        floor = list(map(lambda x: x[0], response))
-        time = list(map(lambda x: x[1], response))
+    # # Plot floor between [a,b]
+    # def plotFloorPrice(self, a: Interval, b = time()) -> None:
+    #     response = PostgresConnection().readonly(f"select floor, last_updated from analytics where address='{self.address}' and last_updated>={b-a} and last_updated<={b}")
+    #     floor = list(map(lambda x: x[0], response))
+    #     time = list(map(lambda x: x[1], response))
 
 
-        p(Xaxis = time,Yaxis = floor, title = self.slug)
+    #     p(Xaxis = time,Yaxis = floor, title = self.slug)

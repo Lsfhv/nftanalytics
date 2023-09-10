@@ -5,8 +5,6 @@ from intervals import *
 from analytics.collection import Collection
 from threading import Thread
 from multiprocessing import Process
-from time import sleep
-# import analytics.globalMarket
 
 monitoring = {}
 
@@ -26,14 +24,7 @@ def processInput():
             
         else:
             print("Already monitoring this collection!") 
-    elif cmd == 'plot':
-        print("Enter slug: ")
-        slug = input()
-        collection = monitoring[slug]
-        p = Thread(target = collection.plotFloorPrice(MONTH))
-        p.start()
-    else:
-        print('Invalid command')
+
 
 if __name__ == '__main__':
     f = open('src/input').readlines()
