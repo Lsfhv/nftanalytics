@@ -3,7 +3,7 @@ Monitors the global nft market (ERC-721's).
 """
 
 from web3 import Web3
-from keys import etherscanKey, infuraUrl, etherscanGetAbi, openseaBaseEndpointV1
+from Keys import etherscanKey, infuraUrl, etherscanGetAbi, openseaBaseEndpointV1
 from request.getRequest import get
 
 lastBlock = None

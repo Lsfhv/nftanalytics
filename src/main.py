@@ -1,6 +1,6 @@
 from sys import argv
 
-from intervals import *
+from Intervals import *
 
 from analytics.Collections import Collection
 from threading import Thread

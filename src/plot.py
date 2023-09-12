@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-from postgresconnection import PostgresConnection
-from intervals import MONTH
+from Postgresql import PostgresConnection
+from Intervals import MONTH
 from time import time
 import sys
 

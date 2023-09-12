@@ -3,12 +3,12 @@ Handles all HTTP get requests to be made.
 """
 
 import requests
-from keys import openseaKey
+from Keys import openseaKey
 
 baseEndpointV1 = "https://api.opensea.io/api/v1"
 baseEndpointV2 = "https://api.opensea.io/v2"
 
-"""Turns parameteres into the format required by the API."""
+"""Formats parameters"""
 def generateParams(params):
     result = ""
     if len(params) != 0:
@@ -24,8 +24,6 @@ def generateParams(params):
 
 """
 Get Request.
-v2 = False, v1 api used.
-v2 = True, v2 api used.
 """
 def get(url, endpoint, params = {}, headers = {}):
     if endpoint != "":
