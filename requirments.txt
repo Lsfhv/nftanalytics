@@ -3,3 +3,4 @@ psycopg2
 web3
 matplotlib
 urllib3==1.26.12
+websockets
