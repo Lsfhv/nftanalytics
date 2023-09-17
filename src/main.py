@@ -44,15 +44,11 @@ async def processInput():
                 asyncio.create_task(collection.start())                
             else:
                 print("Already monitoring this collection!") 
-        else:
-            print("Bad input")
-
-        # await asyncio.sleep(10)
 
 
 if __name__ == '__main__':
-    # asyncio.run(main())
-    asyncio.run(monitorTransfers('0xdfc718e26c4b53706cc12d91ef4694695713712c'))
+    asyncio.run(main())
+    # asyncio.run(monitorTransfers('0x8821BeE2ba0dF28761AffF119D66390D594CD280'))
 
 
 

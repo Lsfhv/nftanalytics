@@ -16,7 +16,7 @@ def messageBuilder(address, topics):
 INFURAAPIKEY = os.environ['INFURAAPIKEY']
 async def getEvent(address: str, topics: list[str], q):
 
-    async with connect(f"wss://sepolia.infura.io/ws/v3/{INFURAAPIKEY}") as ws:
+    async with connect(f"wss://mainnet.infura.io/ws/v3/{INFURAAPIKEY}") as ws:
 
         jsonData = messageBuilder(address, topics)
 
@@ -27,7 +27,7 @@ async def getEvent(address: str, topics: list[str], q):
             try:
                 message = await asyncio.wait_for(ws.recv(), timeout=60)
                 message = json.loads(message)
-                
+                # print(message)
                 asyncio.create_task(q.put(message))                
             except:
                 pass
