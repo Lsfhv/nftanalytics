@@ -12,7 +12,9 @@ from datetime import datetime
 from sql.sqlQGenerator import insertG, updateG
 from time import sleep
 from Keys import openseaBaseEndpointV1, openseaBaseEndpointV2, openseaHeaders
-from Intervals import HOUR
+from Intervals import HOUR, MINUTE
+import asyncio
+from analytics.Transfers import monitorTransfers
 
 class Collection:
 
@@ -33,7 +35,7 @@ class Collection:
         self.address: str = address.lower()
         self.chain: str = chain
         self.delay: Interval = HOUR
-
+        
         if (not self.existsInDB()):
             self.refresh()
             sql = insertG('collections', self.toCollections())
@@ -45,8 +47,9 @@ class Collection:
     def clean(self):
         PostgresConnection().insert(f"delete from analytics where last_updated <= {Collection.lastUpdated - 60*60*24*7*4} and address='{self.address}'")
 
-    def start(self):
+    async def start(self):
         while True:
+            asyncio.create_task(monitorTransfers(self.address))
             self.refresh()
             
             PostgresConnection().insert(updateG('collections', ("address", self.address), self.toUpdateCollections()))
@@ -54,7 +57,8 @@ class Collection:
             sql = insertG('analytics', self.toAnalytics())
             PostgresConnection().insert(sql)
             self.clean()
-            sleep(self.delay)
+            
+            await asyncio.sleep(self.delay)
 
 
     # Data to be updated on the collections table.
@@ -186,11 +190,5 @@ class Collection:
                 return True
         return False
     
-    # # Plot floor between [a,b]
-    # def plotFloorPrice(self, a: Interval, b = time()) -> None:
-    #     response = PostgresConnection().readonly(f"select floor, last_updated from analytics where address='{self.address}' and last_updated>={b-a} and last_updated<={b}")
-    #     floor = list(map(lambda x: x[0], response))
-    #     time = list(map(lambda x: x[1], response))
-
-
-    #     p(Xaxis = time,Yaxis = floor, title = self.slug)
+    def processTransfers(self, queue):
+        pass
