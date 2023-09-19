@@ -3,7 +3,7 @@
 from functools import reduce
 from typing import NewType
 
-SqlArg = NewType('SqlArg', (str, int or str or float))
+SqlArg = NewType('SqlArg', (str or int or str or float))
 ListSqlArg = NewType('ListSqlArg', list[SqlArg])
 
 rst = lambda a,b: a+str(b) +',' if (type(b) == int or type(b) == float) else a + "'" + b + "'" + ','
@@ -14,7 +14,7 @@ tupleToString = lambda prev, tuple: prev + tuple[0] + "=" + str(tuple[1]) + ',' 
 
 insert into _ values (...)
 """
-def insertG(table: str, args: list[str]):
+def insertG(table: str, args: list[SqlArg]):
     return f"insert into {table} values ({reduce(rst, args, '')[:-1]})"
 
 """

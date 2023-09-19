@@ -3,6 +3,10 @@ Keys and constants.
 """
 import os
 
+# https://app.infura.io/dashboard
+infuraurl = lambda x : f"https://mainnet.infura.io/v3/{x}"
+infuraurlsepolia = lambda x : f"https://sepolia.infura.io/v3/{x}"
+
 # https://opensea.io/
 openseaKey = os.environ['OSKEY']
 
