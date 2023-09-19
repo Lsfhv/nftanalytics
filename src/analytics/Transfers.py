@@ -33,7 +33,8 @@ async def monitorTransfers(address):
         dst = None
         tokenId = None
         
-        # print(f"txhash : {txHash}")
+        blockNumber = w3.eth.get_transaction(txHash)["blockNumber"]
+        timestamp = w3.eth.get_block(blockNumber)["timestamp"]
         events = w3.eth.get_transaction_receipt(txHash)["logs"]
 
         for event in events:
@@ -52,7 +53,7 @@ async def monitorTransfers(address):
                 if event["address"] == BLURPOOLAddress:
                     blur += int(event["data"].hex(), 16)
 
-        sql = insertG("transfers", [src,dst,tokenId, ether,weth,blur])
+        sql = insertG("transfers", [txHash, address, tokenId, src, dst, ether/1e18, weth/1e18, blur/1e18, timestamp])
         PostgresConnection().insert(sql)
         # print(sql)
         # print(src,dst,tokenId, ether,weth,blur)
