@@ -13,7 +13,12 @@ from Postgresql import PostgresConnection
 transferTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
 
 async def monitorTransfers(address):
-    
+
+    """
+    Listens to the blockchain for transfer events.
+    Saves how much ether,weth,blurpools where spent on each transfer (The main currencies used for trading erc721s).
+    """
+
     w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
     q = asyncio.Queue()
     
@@ -55,8 +60,6 @@ async def monitorTransfers(address):
 
         sql = insertG("transfers", [txHash, address, tokenId, src, dst, ether/1e18, weth/1e18, blur/1e18, timestamp])
         PostgresConnection().insert(sql)
-        # print(sql)
-        # print(src,dst,tokenId, ether,weth,blur)
 
 
 

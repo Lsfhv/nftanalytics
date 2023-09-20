@@ -2,6 +2,9 @@ import psycopg2
 import os
 
 class PostgresConnection:
+    """
+    Returns a connection to the postgres db.
+    """
     def __init__(self):
         self.host = os.environ['PGSQLHOST']
         self.port = os.environ['PGSQLPORT']
@@ -21,6 +24,9 @@ class PostgresConnection:
 
         return "Done"
     
+    """
+    Execute commands like select.
+    """
     def readonly(self, sql):
         cursor = self.connection.cursor()
         cursor.execute(sql)

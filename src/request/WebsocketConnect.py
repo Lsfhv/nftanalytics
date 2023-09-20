@@ -27,7 +27,6 @@ async def getEvent(address: str, topics: list[str], q: asyncio.Queue):
             try:
                 message = await asyncio.wait_for(ws.recv(), timeout=60)
                 message = json.loads(message)
-                # print(f"Got a message in {address}")
                 asyncio.create_task(q.put(message))                
             except:
                 pass

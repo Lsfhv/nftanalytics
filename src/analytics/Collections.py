@@ -12,9 +12,10 @@ from datetime import datetime
 from sql.sqlQGenerator import insertG, updateG
 from time import sleep
 from Keys import openseaBaseEndpointV1, openseaBaseEndpointV2, openseaHeaders
-from Intervals import HOUR, MINUTE
+from Intervals import HOUR, MINUTE, FIFTEENMINUTES
 import asyncio
 from analytics.Transfers import monitorTransfers
+from analytics.Volume import computeVolume
 
 class Collection:
 
@@ -48,17 +49,22 @@ class Collection:
         PostgresConnection().insert(f"delete from analytics where last_updated <= {Collection.lastUpdated - 60*60*24*7*4} and address='{self.address}'")
 
     async def start(self):
-        while True:
-            asyncio.create_task(monitorTransfers(self.address))
-            self.refresh()
-            
-            PostgresConnection().insert(updateG('collections', ("address", self.address), self.toUpdateCollections()))
 
-            sql = insertG('analytics', self.toAnalytics())
-            PostgresConnection().insert(sql)
-            self.clean()
+        asyncio.create_task(monitorTransfers(self.address))
+
+        await asyncio.sleep(FIFTEENMINUTES)
+        
+        asyncio.create_task(computeVolume(self.address))
+        # while True:
+        #     self.refresh()
             
-            await asyncio.sleep(self.delay)
+        #     PostgresConnection().insert(updateG('collections', ("address", self.address), self.toUpdateCollections()))
+
+        #     sql = insertG('analytics', self.toAnalytics())
+        #     PostgresConnection().insert(sql)
+        #     self.clean()
+            
+        #     await asyncio.sleep(self.delay)
 
 
     # Data to be updated on the collections table.

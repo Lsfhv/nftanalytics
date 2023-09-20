@@ -6,6 +6,7 @@ from typing import NewType
 Interval = NewType('Interval', int)
 
 MINUTE: Interval = Interval(60)
+FIFTEENMINUTES: Interval = Interval(MINUTE * 15)
 HOUR: Interval = Interval(60 * MINUTE)
 SIXHOURS: Interval = Interval(HOUR * Interval(6))
 TWELVEHOURS: Interval = Interval(HOUR * Interval(12))
