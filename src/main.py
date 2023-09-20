@@ -48,8 +48,7 @@ async def processInput():
 
 if __name__ == '__main__':
     asyncio.run(main())
-    # asyncio.run(monitorTransfers('0x8821BeE2ba0dF28761AffF119D66390D594CD280'))
-    # asyncio.run(computeVolume('0xed5af388653567af2f388e6224dc7c4b3241c544'))
+
 
 
 

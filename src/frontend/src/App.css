@@ -1,0 +1,15 @@
+.App {
+    text-align: center;
+    background-color: #282c34;
+	
+}
+
+.taskbar {
+	display:inline-block;
+}
+
+.main {
+	background-color: black;
+	color: white;
+}
+

@@ -49,11 +49,14 @@ class Collection:
         PostgresConnection().insert(f"delete from analytics where last_updated <= {Collection.lastUpdated - 60*60*24*7*4} and address='{self.address}'")
 
     async def start(self):
+        """
+        Starts the coroutines that read moniter the chain.
+        """
 
         asyncio.create_task(monitorTransfers(self.address))
 
         await asyncio.sleep(FIFTEENMINUTES)
-        
+
         asyncio.create_task(computeVolume(self.address))
         # while True:
         #     self.refresh()

@@ -12,11 +12,11 @@ from Postgresql import PostgresConnection
 # Transfer(from, to, tokenid)
 transferTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
 
-async def monitorTransfers(address):
+async def monitorTransfers(address: str):
 
     """
     Listens to the blockchain for transfer events.
-    Saves how much ether,weth,blurpools where spent on each transfer (The main currencies used for trading erc721s).
+    Inserts into db how much ether,weth,blurpools where spent on each transfer (The main currencies used for trading erc721s).
     """
 
     w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
