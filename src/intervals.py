@@ -17,9 +17,19 @@ MONTH: Interval = Interval(WEEK * Interval(4))
 intervals: list[Interval] = [MINUTE, HOUR, SIXHOURS, TWELVEHOURS, DAY, WEEK]
 
 def intervalToString(interval: Interval) -> str:
-    if interval == 60: return "minute"
-    elif interval == 60 * 60: return "hour"
-    elif interval == 60*60*12: return "12 hours"
-    elif interval == 60*60*24: return "day"
-    else: return "week"
+    if interval == MINUTE: return '1m'
+    elif interval == FIFTEENMINUTES: return '15m'
+    elif interval == HOUR: return '1H'
+    elif interval == DAY: return '1D'
+    elif interval == WEEK: return '1W'
+    else: return '1M'
+
+def stringToInterval(s: str) -> Interval:
+    if s == '1m': return MINUTE
+    if s == '15m': return FIFTEENMINUTES
+    elif s == '1H': return HOUR
+    elif s == '1D': return DAY
+    elif s == '7D': return WEEK
+    else: return MONTH
+
 

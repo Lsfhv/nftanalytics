@@ -7,6 +7,9 @@ import asyncio
 from aioconsole import ainput
 from analytics.Transfers import monitorTransfers
 from analytics.Volume import computeVolume
+
+from api.GetVolume import getVolume
+
 monitoring = {}
 
 async def main():
@@ -47,7 +50,9 @@ async def processInput():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    # asyncio.run(main())
+    x =  asyncio.run(getVolume('0x8821bee2ba0df28761afff119d66390d594cd280', DAY))
+    print(x)
 
 
 

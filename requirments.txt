@@ -5,4 +5,5 @@ matplotlib
 urllib3==1.26.12
 websockets
 aioconsole
-
+flask
+flask-sock
