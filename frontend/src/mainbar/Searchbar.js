@@ -1,26 +1,26 @@
 import './Searchbar.css';
 function Searchbar() {
-    function handleSubmit(e) {
-        // console.log(e.);
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        var input = formData.get('input');
+    function handleSubmit(event) {   
+        if (event.key == 'Enter') {
+            event.preventDefault();
+            const input = event.target.value;
+            console.log(input);
+        } 
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input name='input' type='text' placeholder='Collections' className='search-bar'></input>
+        <form onKeyDown={handleSubmit} >
+            <input id='1' type='text' placeholder='Collections' className='search-bar'></input>
         </form>
     );
 }
 
-
-
 function SearchbarComponent() {
     return (
         <div className='search-bar-component'>
+            <span className='place'>NFT Analytics</span>
             <span className='place'>
-                Place holder
+                Place Holder
             </span>
             <span className='place'> 
                 Place holder
@@ -28,7 +28,7 @@ function SearchbarComponent() {
             <span className='place'>
                 Place holder
             </span>
-            <span className='search-bar-span-container'>
+            <span className='place' >
                 <Searchbar></Searchbar>
             </span>
         </div>

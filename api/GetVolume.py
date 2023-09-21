@@ -31,10 +31,12 @@ async def getVolumeMain(address: str, timePeriods: list[str], ws):
     """
     Starts the volume runners. 
     """
-    for i in timePeriods:
-        asyncio.create_task(getVolume(address, stringToInterval(i), ws))
-    while True: 
-        await asyncio.sleep(10000)
+    tasks = list(
+        map(lambda x : getVolume(address, stringToInterval(x), ws), timePeriods))
+    
+    await asyncio.gather(*tasks)
+
+
 
 
 
