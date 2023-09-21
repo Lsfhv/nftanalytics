@@ -8,8 +8,6 @@ from aioconsole import ainput
 from analytics.Transfers import monitorTransfers
 from analytics.Volume import computeVolume
 
-from analytics.GetVolume import getVolume
-
 monitoring = {}
 
 async def main():
