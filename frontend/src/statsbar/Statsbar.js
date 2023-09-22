@@ -2,11 +2,12 @@ import './Statsbar.css';
 import { useParams } from 'react-router-dom';
 
 function Statsbar() {
-    const x = useParams();
-    console.log("once");
-    console.log(x);
+    const collection = useParams();
+    // console.log(collection['collection']);
     return (
-        <>The stats bar</>
+        <div>
+            The stats bar.
+        </div>
     );
 }
 
