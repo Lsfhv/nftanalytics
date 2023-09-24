@@ -13,8 +13,8 @@ function Searchbar() {
     }
 
     return (
-        <form onKeyDown={handleSubmit} >
-            <input id='1' type='text' placeholder='Collections' className='search-bar'></input>
+        <form onKeyDown={handleSubmit}>
+            <input id='1' type='text' placeholder='Collections' className='search-bar' autoComplete='off'></input>
         </form>
     );
 }

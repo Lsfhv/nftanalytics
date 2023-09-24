@@ -14,7 +14,7 @@ function App() {
             <main>
                 <Routes>
                     <Route path='/' element={<div>Just the home pages</div>}></Route>
-                    <Route path='/:collection' element={<Statsbar x='{collection}'/>}></Route>
+                    <Route path='/:collection' element={<Statsbar/>}></Route>
                     <Route path='/x' element={<div>zee</div>}></Route>
                 </Routes>
             </main>
