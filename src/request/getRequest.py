@@ -3,7 +3,7 @@ Handles all HTTP get requests to be made.
 """
 
 import requests
-from Keys import openseaKey
+from Keys import openseaKey, etherscanGetAbi, etherscanKey
 
 baseEndpointV1 = "https://api.opensea.io/api/v1"
 baseEndpointV2 = "https://api.opensea.io/v2"
@@ -38,5 +38,14 @@ def get(url, endpoint, params = {}, headers = {}):
         
         response = requests.get(url, headers = headers)
         
-
     return response
+
+def getABI(address):
+    """
+    Get the ABI of a contract with etherscan.
+    """
+    url = etherscanGetAbi(address, etherscanKey)
+    response = requests.get(url)
+    while response.status_code != 200: 
+        response = requests.get(url)
+    return response.json()

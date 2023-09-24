@@ -12,7 +12,8 @@ sock = Sock(app)
 def volume(ws):
     data = ws.receive()
     data = json.loads(data)
-
+    print("did any data come", data)
+    
     asyncio.run(getVolumeMain(data['address'], data['params'], ws))
 
 app.run()

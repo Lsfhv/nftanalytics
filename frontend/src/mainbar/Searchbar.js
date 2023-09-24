@@ -1,10 +1,14 @@
 import './Searchbar.css';
+import { useNavigate } from 'react-router-dom';
 function Searchbar() {
+
+    const navigate = useNavigate();
+    
     function handleSubmit(event) {   
         if (event.key == 'Enter') {
             event.preventDefault();
             const input = event.target.value;
-            console.log(input);
+            navigate('/' + input);
         } 
     }
 

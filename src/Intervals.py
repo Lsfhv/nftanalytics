@@ -29,7 +29,7 @@ def stringToInterval(s: str) -> Interval:
     if s == '15m': return FIFTEENMINUTES
     elif s == '1H': return HOUR
     elif s == '1D': return DAY
-    elif s == '7D': return WEEK
+    elif s == '1W': return WEEK
     else: return MONTH
 
 

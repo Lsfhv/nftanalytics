@@ -1,5 +1,6 @@
 """
 Monitors blockchain events for transfers.
+Update the amount of holders of collection.
 """
 from request.WebsocketConnect import getEvent
 import asyncio
