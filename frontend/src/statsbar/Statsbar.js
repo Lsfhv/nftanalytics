@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 
-function Statsbar(x) {
+function Statsbar() {
     const params = useParams();
     
     const [_15m, set15m] =  useState(0);
@@ -11,7 +11,7 @@ function Statsbar(x) {
     const [_1D, set1D] = useState(0);
     const [_1W, set1W] = useState(0);
 
-    const [collection, setCollection] = useState('');
+    const [collection, setCollection] = useState('Loading');
 
     const msg = {
         address: params['collection'],
@@ -25,7 +25,7 @@ function Statsbar(x) {
                 'http://127.0.0.1:5000/slug/' + params['collection']);
             const data = await response.json();
             
-
+            console.log(data);
             setCollection(collection => data.slug);
         };
 
@@ -64,5 +64,5 @@ function Statsbar(x) {
         </div>
     );
 }
-
+ge
 export default Statsbar;

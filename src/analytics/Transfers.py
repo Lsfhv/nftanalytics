@@ -46,7 +46,7 @@ async def monitorTransfers(address: str):
         for event in events:
             if event["topics"][0].hex() == transferTopic:
                 
-                if event["address"].lower() == address:
+                if event["address"] == address:
                     src = event["topics"][1].hex()
                     src = '0x' + src[len(src) - 40 : len(src)]
                     dst = event["topics"][2].hex()

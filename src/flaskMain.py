@@ -13,7 +13,6 @@ sock = Sock(app)
 CORS(app)
 @app.route('/slug/<address>')
 def getslug(address):
-
     """
     Given an address, returns the name of the collection.
     """
@@ -21,13 +20,13 @@ def getslug(address):
     connection = PostgresConnection()
     
     response = connection.readonly(f"select * from slug where address='{escape(address).lower()}'")
-    print(escape(address).lower())
+
     if len(response) == 0:
         return 'Not found'
     data = {"slug": response[0][-1]}
     
     data = json.dumps(data)
-    print(data)
+
     return data
 
 @sock.route('/volume')
