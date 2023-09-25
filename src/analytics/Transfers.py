@@ -27,39 +27,16 @@ async def monitorTransfers(address: str):
 
     while True:
         message = await asyncio.create_task(q.get())
+
+        src = hex(int(message['params']['result']['topics'][1], 16))
+        dst = hex(int(message['params']['result']['topics'][2], 16))
+        tokenId = int(message['params']['result']['topics'][3], 16)
         txHash = message['params']['result']['transactionHash']
 
-        transaction = w3.eth.get_transaction(txHash)
-
-        ether = transaction["value"]
-        weth = 0
-        blur = 0
-
-        src = None
-        dst = None
-        tokenId = None
-        
         blockNumber = w3.eth.get_transaction(txHash)["blockNumber"]
         timestamp = w3.eth.get_block(blockNumber)["timestamp"]
-        events = w3.eth.get_transaction_receipt(txHash)["logs"]
 
-        for event in events:
-            if event["topics"][0].hex() == transferTopic:
-                
-                if event["address"] == address:
-                    src = event["topics"][1].hex()
-                    src = '0x' + src[len(src) - 40 : len(src)]
-                    dst = event["topics"][2].hex()
-                    dst = '0x' + dst[len(dst) - 40 : len(dst)]
-                    tokenId = int(event["topics"][3].hex(), 16)
-
-                if event["address"] == WETHAddress:
-                    weth += int(event["data"].hex(), 16)
-
-                if event["address"] == BLURPOOLAddress:
-                    blur += int(event["data"].hex(), 16)
-
-        sql = insertG("transfers", [txHash, address, tokenId, src, dst, ether/1e18, weth/1e18, blur/1e18, timestamp])
+        sql = insertG("transfers", [txHash, address, src, dst, tokenId, timestamp])
         PostgresConnection().insert(sql)
 
 

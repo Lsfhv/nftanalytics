@@ -25,7 +25,7 @@ async def getEvent(address: str, topics: list[str], q: asyncio.Queue):
 
         while True:
             try:
-                message = await asyncio.wait_for(ws.recv(), timeout=60)
+                message = await asyncio.wait_for(ws.recv(), timeout=60000000)
                 message = json.loads(message)
                 asyncio.create_task(q.put(message))                
             except:

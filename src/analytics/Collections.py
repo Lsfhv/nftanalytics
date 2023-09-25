@@ -38,9 +38,9 @@ class Collection:
 
         asyncio.create_task(monitorTransfers(self.address))
 
-        await asyncio.sleep(FIFTEENMINUTES)
+        # await asyncio.sleep(FIFTEENMINUTES)
 
-        asyncio.create_task(computeVolume(self.address))
+        # asyncio.create_task(computeVolume(self.address))
 
     def slugExists(self):
         """
