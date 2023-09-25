@@ -4,10 +4,17 @@ function Searchbar() {
 
     const navigate = useNavigate();
     
-    function handleSubmit(event) {   
+    async function handleSubmit(event) {   
         if (event.key == 'Enter') {
             event.preventDefault();
             const input = event.target.value;
+            
+            // const x = "http://127.0.0.1:5000/slug/" + input;
+            // const response = await fetch(x);
+            // // const data = await response.json();
+            // const data = await response.json();
+            
+            // console.log(await data);
             navigate('/' + input);
         } 
     }

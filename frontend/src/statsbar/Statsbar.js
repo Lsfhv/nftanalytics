@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 function Statsbar() {
     const params = useParams();
     
-    const [_15m, set15m] =  useState(0);
+    const [_15m, set15m] = useState(0);
     const [_1H, set1H] = useState(0);
     const [_1D, set1D] = useState(0);
     const [_1W, set1W] = useState(0);
@@ -14,7 +14,7 @@ function Statsbar() {
     const [collection, setCollection] = useState('Loading');
 
     const msg = {
-        address: params['collection'],
+        slug: params['slug'],
         params: ["15m", "1H", "1D", "1W"]
     }
     useEffect(() => {
@@ -22,13 +22,10 @@ function Statsbar() {
 
         const collectionName = async () => {
             const response = await fetch(
-                'http://127.0.0.1:5000/slug/' + params['collection']);
+                'http://127.0.0.1:5000/slug/' + params['slug']);
             const data = await response.json();
-            
-            console.log(data);
-            setCollection(collection => data.slug);
+            setCollection(collection => data.address[3]);
         };
-
         collectionName();
 
         ws.onopen = () => {
@@ -52,7 +49,7 @@ function Statsbar() {
                     break;
             }
         }
-    }, [params['collection']]);
+    }, [params['slug']]);
 
     return (
         <div className='stats'>
@@ -64,5 +61,5 @@ function Statsbar() {
         </div>
     );
 }
-ge
+
 export default Statsbar;

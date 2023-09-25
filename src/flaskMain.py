@@ -11,31 +11,18 @@ app = Flask(__name__)
 sock = Sock(app)
 
 CORS(app)
-@app.route('/slug/<address>')
-def getslug(address):
-    """
-    Given an address, returns the name of the collection.
-    """
 
-    connection = PostgresConnection()
-    
-    response = connection.readonly(f"select * from slug where address='{escape(address).lower()}'")
-
-    if len(response) == 0:
-        return 'Not found'
-    data = {"slug": response[0][-1]}
-    
-    data = json.dumps(data)
-
+@app.route('/slug/<slug>')
+def getAddress(slug):
+    response = PostgresConnection().readonly(f"select * from slug where blur='{escape(slug)}'")
+    data = json.dumps({"address": response[0]})
     return data
 
 @sock.route('/volume')
 def volume(ws):
     data = ws.receive()
     data = json.loads(data)
-
-    data['address'] = data['address'].lower()
-    
-    asyncio.run(getVolumeMain(data['address'], data['params'], ws))
+    response = PostgresConnection().readonly(f"select address from slug where blur='{data['slug']}'")
+    asyncio.run(getVolumeMain(response[0][0], data['params'], ws))
 
 app.run()
