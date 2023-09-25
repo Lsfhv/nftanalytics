@@ -51,19 +51,14 @@ class Collection:
 
         response = PostgresConnection().readonly(f"select 1 from slug where address='{self.address}'")
         if len(response) == 0:
-            abi = getABI(self.address)['result']
+            abi = '[{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}]'
             openseaSlug =  get(openseaBaseEndpointV1, self.retrieveContract(self.address), headers=openseaHeaders)
             openseaSlug = openseaSlug.json()['collection']['slug']
             w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
             contract = w3.eth.contract(address=self.address, abi = abi)
 
-            try:
-                name = contract.functions.name().call()
-            except:
-                # Etherscan has incorrect abi for degods, so just use abi with only name function
-                abi = '[{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}]'
-                contract = w3.eth.contract(address=self.address, abi = abi)
-                name = contract.functions.name().call()
-            
+            name = contract.functions.name().call()
+
+            # No access to blur api yet so just use opensea slug as the blur slug for now.
             PostgresConnection().insert(f"insert into slug values ('{self.address}', '{openseaSlug}', '{openseaSlug}', '{name}')")
             

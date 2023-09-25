@@ -14,9 +14,8 @@ async def main():
     f = open('src/input').readlines()
     p = 0
     while p < len(f):
-        cmd = f[p].strip()
-        address = f[p + 1].strip()
-        p += 2
+        address = f[p].strip()
+        p += 1
         if address not in monitoring:
             
             collection = Collection(address)
@@ -31,18 +30,14 @@ async def main():
 
 async def processInput():
     while True:
-        cmd = await ainput("Enter command: ")
-
-        if cmd == "add":
-
-            address = await ainput("Enter address: ")
-            
-            if address not in monitoring:
-                collection = Collection( address)
-                monitoring[address] = collection
-                asyncio.create_task(collection.start())                
-            else:
-                print("Already monitoring this collection!") 
+        address = await ainput("Enter address: ")
+        
+        if address not in monitoring:
+            collection = Collection( address)
+            monitoring[address] = collection
+            asyncio.create_task(collection.start())                
+        else:
+            print("Already monitoring this collection!") 
 
 
 if __name__ == '__main__':
