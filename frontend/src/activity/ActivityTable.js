@@ -12,8 +12,7 @@ function ActivityTable () {
         let now = Date.now() / 1000;
         let data = await response.json();
         data = await data.result;
-        txHashs = data.map(i => i[0]);
-        // data = data.map(i => i.slice(2));
+        
         data = data.map(i => [i[0], i[2].substring(2, 8), i[3].substring(2,8), i[4], (now - i[5]) / 60 ]);
 
         setTransactions(transactions => data);

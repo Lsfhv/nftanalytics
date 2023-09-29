@@ -15,6 +15,7 @@ tupleToString = lambda prev, tuple: prev + tuple[0] + "=" + str(tuple[1]) + ',' 
 insert into _ values (...)
 """
 def insertG(table: str, args: list[SqlArg]):
+    # print(args)
     return f"insert into {table} values ({reduce(rst, args, '')[:-1]})"
 
 """

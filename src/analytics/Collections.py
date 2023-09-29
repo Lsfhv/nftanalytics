@@ -32,16 +32,8 @@ class Collection:
         self.slugExists()
         
     async def start(self):
-        """
-        Starts the coroutines that read moniter the collection.
-        """
-
         asyncio.create_task(monitorTransfers(self.address))
-
-        # await asyncio.sleep(FIFTEENMINUTES)
-
-        # asyncio.create_task(computeVolume(self.address))
-
+        
     def slugExists(self):
         """
         Check if address exists in the slug relation. 
