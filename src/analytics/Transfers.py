@@ -19,7 +19,7 @@ async def monitorTransfers(address: str):
     """
     Listens to the blockchain for transfer events.
     """
-
+    
     abi ='[{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"orderHash","type":"bytes32"},{"indexed":false,"internalType":"uint256","name":"tokenIdListingIndexTrader","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"collectionPriceSide","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"makerFeeRecipientRate","type":"uint256"}],"name":"Execution721MakerFeePacked","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"orderHash","type":"bytes32"},{"indexed":false,"internalType":"uint256","name":"tokenIdListingIndexTrader","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"collectionPriceSide","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"takerFeeRecipientRate","type":"uint256"}],"name":"Execution721TakerFeePacked","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"orderHash","type":"bytes32"},{"indexed":false,"internalType":"uint256","name":"tokenIdListingIndexTrader","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"collectionPriceSide","type":"uint256"}],"name":"Execution721Packed","type":"event"}]'
 
     blurMakerPackedTopic = '0x7dc5c0699ac8dd5250cbe368a2fc3b4a2daadb120ad07f6cccea29f83482686e'
@@ -37,7 +37,7 @@ async def monitorTransfers(address: str):
         message = await q.get()
 
         txHash = message['params']['result']['transactionHash']
-        # print("Got something!: ", txHash)
+
         receipt = w3.eth.get_transaction_receipt(txHash)
 
 
@@ -46,91 +46,125 @@ async def monitorTransfers(address: str):
 
         dst = message['params']['result']['topics'][2]
         dst = "0x" + dst[len(dst) - 40: ]
-        # dst = hex(int(message['params']['result']['topics'][2], 16))
+
         token = int(message['params']['result']['topics'][3], 16)
         
         for event in receipt["logs"]:
-            if event["topics"][0].hex() == blurMakerPackedTopic:
-                # Someone bought a listing.
-                decoded = contract.events.Execution721MakerFeePacked().process_log(event)["args"]
+            eventSignature = event["topics"][0].hex()
+
+            if eventSignature == blurMakerPackedTopic or eventSignature == blurTakerPackedTopic or eventSignature == blurPackedTopic:
+                if eventSignature == blurMakerPackedTopic:
+                    decoded = contract.events.Execution721MakerFeePacked().process_log(event)["args"]
+                elif eventSignature == blurTakerPackedTopic:
+                    decoded = contract.events.Execution721TakerFeePacked().process_log(event)["args"]
+                else: 
+                    decoded = contract.events.Execution721Packed().process_log(event)["args"]
 
                 tokenIdListingIndexTrader = hex(decoded["tokenIdListingIndexTrader"]) 
                 collectionPriceSide = hex(decoded["collectionPriceSide"])
 
-                # Decode the inputs to tokenIdListingIndexTrader
-                trader = "0x" + tokenIdListingIndexTrader[len(tokenIdListingIndexTrader) - 40:] # The address that listed it. The token is transfered from this address.
+                # If blurMakerPackedTopic, then this is the address of the wallet that listed it. The NFT will be transferred from this wallet. i.e trader = src
+                # Else, someone sold into bids. Trader = the person whos bid got accepted, the NFT is given to this person. i.e trader = dst
+                trader = "0x" + tokenIdListingIndexTrader[len(tokenIdListingIndexTrader) - 40:] 
                 tokenId = tokenIdListingIndexTrader[:len(tokenIdListingIndexTrader)-40][2:][:-2]
                 tokenId = int(tokenId, 16)
-                # Decode the inupts to collectionPriceSide
                 collection = "0x" + collectionPriceSide[len(collectionPriceSide)-40:]
-                price = collectionPriceSide[:len(collectionPriceSide)-40][2:]
+
+                if eventSignature == blurMakerPackedTopic:
+                    price = collectionPriceSide[:len(collectionPriceSide)-40][2:]
+                else:
+                    price = collectionPriceSide[:len(collectionPriceSide)-40][2:][1:]
                 price = int(price, 16)
-# dt = datetime.datetime.fromtimestamp(0)
-                # print("Maker, ", src, dst, trader, collection, address, price)
-                if src == trader and collection == address.lower() and token == tokenId:
 
-                    blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
+                blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
+
+                try:
                     timestamp = w3.eth.get_block(blockNumber)["timestamp"]
+                except:
+                    timestamp = 0
 
-                    sql = insertG("trades", [address, src, dst, tokenId, str(price), txHash, "blur", str(datetime.datetime.fromtimestamp(timestamp))])
-                    print(sql)
+                if (eventSignature == blurMakerPackedTopic and src == trader and collection == address.lower() and token == tokenId) or (eventSignature == blurTakerPackedTopic or eventSignature == blurPackedTopic) and dst == trader and collection == address.lower() and token == tokenId:
+                    sql = insertG("trades", [address, src, dst, tokenId, str(price), txHash, "blur", str(datetime.datetime.fromtimestamp(timestamp))])  
                     PostgresConnection().insert(sql)
 
-                # Trader -> Maker, listing fullfilled.
+                
 
-            if event["topics"][0].hex() == blurTakerPackedTopic:
-                # Someone sold into bids.
-                decoded = contract.events.Execution721TakerFeePacked().process_log(event)["args"]
+            # if event["topics"][0].hex() == blurMakerPackedTopic:
+            #     # Someone bought a listing.
+            #     decoded = contract.events.Execution721MakerFeePacked().process_log(event)["args"]
 
-                tokenIdListingIndexTrader = hex(decoded["tokenIdListingIndexTrader"])
-                collectionPriceSide = hex(decoded["collectionPriceSide"])
+            #     tokenIdListingIndexTrader = hex(decoded["tokenIdListingIndexTrader"]) 
+            #     collectionPriceSide = hex(decoded["collectionPriceSide"])
 
-                # Decode the inputs to tokenIdListingIndexTrader
-                trader = "0x" + tokenIdListingIndexTrader[len(tokenIdListingIndexTrader) - 40:] # The address that had the bid offered. The nft will be transfered to this address.
-                tokenId = tokenIdListingIndexTrader[:len(tokenIdListingIndexTrader)-40][2:][:-2]
-                tokenId = int(tokenId, 16)
-                # Decode inputs to collectionPriceSide
-                collection = "0x" + collectionPriceSide[len(collectionPriceSide)-40:]
-                price = collectionPriceSide[:len(collectionPriceSide)-40][2:][1:]
-                price = int(price, 16)
+            #     # Decode the inputs to tokenIdListingIndexTrader
+            #     trader = "0x" + tokenIdListingIndexTrader[len(tokenIdListingIndexTrader) - 40:] # The address that listed it. The token is transfered from this address.
+            #     tokenId = tokenIdListingIndexTrader[:len(tokenIdListingIndexTrader)-40][2:][:-2]
+            #     tokenId = int(tokenId, 16)
+            #     # Decode the inupts to collectionPriceSide
+            #     collection = "0x" + collectionPriceSide[len(collectionPriceSide)-40:]
+            #     price = collectionPriceSide[:len(collectionPriceSide)-40][2:]
+            #     price = int(price, 16)
+
+            #     if src == trader and collection == address.lower() and token == tokenId:
+
+            #         blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
+            #         timestamp = w3.eth.get_block(blockNumber)["timestamp"]
+
+            #         sql = insertG("trades", [address, src, dst, tokenId, str(price), txHash, "blur", str(datetime.datetime.fromtimestamp(timestamp))])
+            #         PostgresConnection().insert(sql)
+
+            #     # Trader -> Maker, listing fullfilled.
+
+            # if event["topics"][0].hex() == blurTakerPackedTopic:
+            #     # Someone sold into bids.
+            #     decoded = contract.events.Execution721TakerFeePacked().process_log(event)["args"]
+
+            #     tokenIdListingIndexTrader = hex(decoded["tokenIdListingIndexTrader"])
+            #     collectionPriceSide = hex(decoded["collectionPriceSide"])
+
+            #     # Decode the inputs to tokenIdListingIndexTrader
+            #     trader = "0x" + tokenIdListingIndexTrader[len(tokenIdListingIndexTrader) - 40:] # The address that had the bid offered. The nft will be transfered to this address.
+            #     tokenId = tokenIdListingIndexTrader[:len(tokenIdListingIndexTrader)-40][2:][:-2]
+            #     tokenId = int(tokenId, 16)
+            #     # Decode inputs to collectionPriceSide
+            #     collection = "0x" + collectionPriceSide[len(collectionPriceSide)-40:]
+            #     price = collectionPriceSide[:len(collectionPriceSide)-40][2:][1:]
+            #     price = int(price, 16)
 
 
-                # print("Taker, ", src, dst, trader, collection, address, price)
+            #     # print("Taker, ", src, dst, trader, collection, address, price)
 
 
-                if dst == trader and collection == address.lower() and token == tokenId:
+            #     if dst == trader and collection == address.lower() and token == tokenId:
                    
-                    blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
-                    timestamp = w3.eth.get_block(blockNumber)["timestamp"]
-                    # print(address, src, dst, tokenId, str(price), txHash, "blur",str(datetime.datetime.fromtimestamp(timestamp)) )
-                    sql = insertG("trades", [address, src, dst, tokenId, str(price), txHash, "blur", str(datetime.datetime.fromtimestamp(timestamp))])
-                    print(sql)
-                    PostgresConnection().insert(sql)
+            #         blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
+            #         timestamp = w3.eth.get_block(blockNumber)["timestamp"]
+            #         # print(address, src, dst, tokenId, str(price), txHash, "blur",str(datetime.datetime.fromtimestamp(timestamp)) )
+            #         sql = insertG("trades", [address, src, dst, tokenId, str(price), txHash, "blur", str(datetime.datetime.fromtimestamp(timestamp))])
+            #         PostgresConnection().insert(sql)
 
-            if event["topics"][0].hex() == blurPackedTopic:
-                # Same as a taker.
-                decoded = contract.events.Execution721Packed().process_log(event)["args"]
+            # if event["topics"][0].hex() == blurPackedTopic:
+            #     # Same as a taker.
+            #     decoded = contract.events.Execution721Packed().process_log(event)["args"]
 
-                tokenIdListingIndexTrader = hex(decoded["tokenIdListingIndexTrader"])
-                collectionPriceSide = hex(decoded["collectionPriceSide"])
+            #     tokenIdListingIndexTrader = hex(decoded["tokenIdListingIndexTrader"])
+            #     collectionPriceSide = hex(decoded["collectionPriceSide"])
 
-                trader = "0x" + tokenIdListingIndexTrader[len(tokenIdListingIndexTrader) - 40:]
-                tokenId = tokenIdListingIndexTrader[:len(tokenIdListingIndexTrader)-40][2:][:-2]
-                tokenId = int(tokenId, 16)
+            #     trader = "0x" + tokenIdListingIndexTrader[len(tokenIdListingIndexTrader) - 40:]
+            #     tokenId = tokenIdListingIndexTrader[:len(tokenIdListingIndexTrader)-40][2:][:-2]
+            #     tokenId = int(tokenId, 16)
 
-                collection = "0x" + collectionPriceSide[len(collectionPriceSide)-40:]
-                price = collectionPriceSide[:len(collectionPriceSide)-40][2:][1:]
-                price = int(price, 16)
+            #     collection = "0x" + collectionPriceSide[len(collectionPriceSide)-40:]
+            #     price = collectionPriceSide[:len(collectionPriceSide)-40][2:][1:]
+            #     price = int(price, 16)
 
-                # print("!!!Taker, ", src, dst, trader, collection, address, price)
-
-                if dst == trader and collection == address.lower() and token == tokenId:
+            #     if dst == trader and collection == address.lower() and token == tokenId:
                     
-                    blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
-                    timestamp = w3.eth.get_block(blockNumber)["timestamp"]
+            #         blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
+            #         timestamp = w3.eth.get_block(blockNumber)["timestamp"]
 
-                    sql = insertG("trades", [address, src, dst, tokenId, str(price), txHash, "blur", str(datetime.datetime.fromtimestamp(timestamp))])
-                    PostgresConnection().insert(sql)
+            #         sql = insertG("trades", [address, src, dst, tokenId, str(price), txHash, "blur", str(datetime.datetime.fromtimestamp(timestamp))])
+            #         PostgresConnection().insert(sql)
 
 
 
