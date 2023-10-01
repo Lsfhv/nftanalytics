@@ -21,5 +21,14 @@ def getTrades(ws):
 
     asyncio.run(getTradesMain(ws, address))
 
+@app.route('/getaddress/<slug>')
+def getAddress(slug):
+    slug = escape(slug)
+    response = PostgresConnection().readonly(f"select address from slug where opensea='{slug}'")
+    
+    response = {"address": response[0][0]}
+
+    return [response]
+
 
 app.run()

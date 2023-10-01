@@ -8,6 +8,7 @@ function Searchbar() {
         if (event.key == 'Enter') {
             event.preventDefault();
             const input = event.target.value;
+            event.target.value = '';
             
             // const x = "http://127.0.0.1:5000/slug/" + input;
             // const response = await fetch(x);

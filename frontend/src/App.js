@@ -17,8 +17,8 @@ function App() {
                     <Route path='/' element={<div>Just the home pages</div>}></Route>
                     <Route path='/:slug' element={
                         <div>
-                            <span><Statsbar></Statsbar></span>
-                            <span><ActivityTable></ActivityTable></span>
+                            <div><Statsbar></Statsbar></div>
+                            <div><ActivityTable></ActivityTable></div>
                         </div>
                     }></Route>
                     <Route path='/x' element={<div>zee</div>}></Route>

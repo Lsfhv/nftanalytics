@@ -18,37 +18,37 @@ function Statsbar() {
         params: ["15m", "1H", "1D", "1W"]
     }
     useEffect(() => {
-        const ws = new WebSocket('ws://127.0.0.1:5000/volume');
+        // const ws = new WebSocket('ws://127.0.0.1:5000/volume');
 
-        const collectionName = async () => {
-            const response = await fetch(
-                'http://127.0.0.1:5000/slug/' + params['slug']);
-            const data = await response.json();
-            setCollection(collection => data.address[3]);
-        };
-        collectionName();
+        // const collectionName = async () => {
+        //     const response = await fetch(
+        //         'http://127.0.0.1:5000/slug/' + params['slug']);
+        //     const data = await response.json();
+        //     setCollection(collection => data.address[3]);
+        // };
+        // collectionName();
 
-        ws.onopen = () => {
-            ws.send(JSON.stringify(msg));
-        };
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            switch (data.timeperiod) {
-                case '15m':
-                    set15m(_15m => data.volume);
-                    break;
-                case '1H':
-                    set1H(_1H => data.volume);
-                    break;
-                case '1D':
-                    set1D(_1D => data.volume);
-                    break;
-                case '1W':
-                    set1W(_1W => data.volume);    
-                default:
-                    break;
-            }
-        }
+        // ws.onopen = () => {
+        //     ws.send(JSON.stringify(msg));
+        // };
+        // ws.onmessage = (event) => {
+        //     const data = JSON.parse(event.data);
+        //     switch (data.timeperiod) {
+        //         case '15m':
+        //             set15m(_15m => data.volume);
+        //             break;
+        //         case '1H':
+        //             set1H(_1H => data.volume);
+        //             break;
+        //         case '1D':
+        //             set1D(_1D => data.volume);
+        //             break;
+        //         case '1W':
+        //             set1W(_1W => data.volume);    
+        //         default:
+        //             break;
+        //     }
+        // }
     }, [params['slug']]);
 
     return (

@@ -5,35 +5,50 @@ function ActivityTable () {
     const params = useParams();
 
     const [transactions, setTransactions] = useState([]);
-    let txHashs = [];
-    const getActivity = async () => {
-
-        const response = await fetch('http://127.0.0.1:5000/activity/' + params['slug']);
-        let now = Date.now() / 1000;
-        let data = await response.json();
-        data = await data.result;
-        
-        data = data.map(i => [i[0], i[2].substring(2, 8), i[3].substring(2,8), i[4], (now - i[5]) / 60 ]);
-
-        setTransactions(transactions => data);
-        return data;
-    }
 
     useEffect(() =>{
-        getActivity()
+
+        const ws = new WebSocket('ws://127.0.0.1:5000/trades'); 
+
+        const collectionAddress = async () => {
+            const response = await fetch('http://127.0.0.1:5000/getaddress/' + params['slug']);
+            const data = await response.json();
+            
+            return await data;
+        }
+
+        ws.onmessage = (event) => {
+            let data = event.data;
+            data = JSON.parse(data);
+
+            data = data.map(i => {
+                let dateTime = new Date(i[7] * 1000);
+                return [i[1], i[2], i[3], i[4] / 1e18, `${dateTime.getDay() + 1}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()} ${dateTime.getHours()}:${dateTime.getMinutes()}:${dateTime.getSeconds()}`];
+            });
+
+            setTransactions(transactions => data);
+        }
+    
+        ws.onopen = async () => {
+            const address = (await collectionAddress())[0].address
+            ws.send(JSON.stringify({address: address}))
+        }
+
+        return () => {
+            ws.close();
+        }
     }, [params['slug']])
 
     return (
         <div>
-            <div>The activity table.</div>
             <table>
                 <thead>
                     <tr>
-                        <th>Hash</th>
-                        <th>From</th>
-                        <th>To</th>
-                        <th>id</th>
-                        <th>time</th>
+                        <th>Source</th>
+                        <th>Destination</th>
+                        <th>Token Id</th>
+                        <th>Value</th>
+                        <th>Time</th>
                     </tr>
                 </thead>
                 <tbody>
