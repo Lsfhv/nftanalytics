@@ -30,14 +30,11 @@ async def getEvent(address: str, topics: list[str], q: asyncio.Queue):
 
                 await q.put(message)             
             except Exception as e:
-                print("WEBSOCKET ERROR")
-
-                
 
                 ws = await connect(f"wss://mainnet.infura.io/ws/v3/{INFURAAPIKEY}")
                 jsonData = messageBuilder(address, topics)
                 await ws.send(jsonData)
                 subscription_response = await ws.recv()
-                
-                print("RECONNECTED?")        
-                
+
+                print(f"Websocket error reconnected? , {subscription_response}")
+                                

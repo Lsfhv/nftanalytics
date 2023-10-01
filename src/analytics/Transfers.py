@@ -10,21 +10,12 @@ from Keys import WETHAddress, BLURPOOLAddress
 from sql.sqlQGenerator import insertG
 from Postgresql import PostgresConnection
 import datetime
-
-
-# Transfer(from, to, tokenid)
-transferTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+from Keys import abi, blurMakerPackedTopic, blurPackedTopic, blurTakerPackedTopic, transferTopic, openseaOrderFulfilledTopic
 
 async def monitorTransfers(address: str):
     """
     Listens to the blockchain for transfer events.
     """
-
-    abi ='[{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"orderHash","type":"bytes32"},{"indexed":false,"internalType":"uint256","name":"tokenIdListingIndexTrader","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"collectionPriceSide","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"makerFeeRecipientRate","type":"uint256"}],"name":"Execution721MakerFeePacked","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"orderHash","type":"bytes32"},{"indexed":false,"internalType":"uint256","name":"tokenIdListingIndexTrader","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"collectionPriceSide","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"takerFeeRecipientRate","type":"uint256"}],"name":"Execution721TakerFeePacked","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"orderHash","type":"bytes32"},{"indexed":false,"internalType":"uint256","name":"tokenIdListingIndexTrader","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"collectionPriceSide","type":"uint256"}],"name":"Execution721Packed","type":"event"}]'
-
-    blurMakerPackedTopic = '0x7dc5c0699ac8dd5250cbe368a2fc3b4a2daadb120ad07f6cccea29f83482686e'
-    blurTakerPackedTopic = '0x0fcf17fac114131b10f37b183c6a60f905911e52802caeeb3e6ea210398b81ab'
-    blurPackedTopic = '0x1d5e12b51dee5e4d34434576c3fb99714a85f57b0fd546ada4b0bddd736d12b2'
     
     w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
     q = asyncio.Queue()
@@ -40,12 +31,11 @@ async def monitorTransfers(address: str):
 
         receipt = w3.eth.get_transaction_receipt(txHash)
 
-
         src = message['params']['result']['topics'][1]
-        src = "0x" + src[len(src) - 40: ]
+        src = "0x" + src[len(src) - 40 : ]
 
         dst = message['params']['result']['topics'][2]
-        dst = "0x" + dst[len(dst) - 40: ]
+        dst = "0x" + dst[len(dst) - 40 : ]
 
         token = int(message['params']['result']['topics'][3], 16)
         # TODO handle opensea trades.
@@ -83,9 +73,46 @@ async def monitorTransfers(address: str):
                 except:
                     timestamp = 0
 
-                if (eventSignature == blurMakerPackedTopic and src == trader and collection == address.lower() and token == tokenId) or (eventSignature == blurTakerPackedTopic or eventSignature == blurPackedTopic) and dst == trader and collection == address.lower() and token == tokenId:
+                if (eventSignature == blurMakerPackedTopic and src == trader and collection == address.lower() and token == tokenId) or ((eventSignature == blurTakerPackedTopic or eventSignature == blurPackedTopic) and dst == trader and collection == address.lower() and token == tokenId):
                     sql = insertG("trades", [address, src, dst, tokenId, str(price), txHash, "blur", str(datetime.datetime.fromtimestamp(timestamp))])  
                     PostgresConnection().insert(sql)
+            elif eventSignature == openseaOrderFulfilledTopic:
+                decoded = contract.events.OrderFulfilled().process_log(event)["args"]
+                # print(txHash)
+                offerer = decoded['offerer']
+                recipient = decoded['recipient']
+                
+                if src == offerer.lower() and dst == recipient.lower() and token == decoded['offer'][0]['identifier']:  
+                    # Listing was sold, make order. 
+                    # offerer = the lister, recipeint = the buyer.
+                    # print("got here")
+                    consideration = decoded['consideration']
+
+                    price = 0
+                    for i in consideration:
+                        price += i['amount']
+
+                    blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
+                    try:
+                        timestamp = w3.eth.get_block(blockNumber)["timestamp"]
+                    except:
+                        timestamp = 0
+
+                    sql = insertG("trades", [address, offerer, recipient, token, str(price), txHash, "opensea", str(datetime.datetime.fromtimestamp(timestamp))])
+                    PostgresConnection().insert(sql)
+                elif src == recipient.lower() and dst == offerer.lower() and token == decoded['consideration'][0]['identifier']:
+                    # print("or we got here")
+                    price = decoded['offer'][0]['amount']
+                    blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
+                    try:
+                        timestamp = w3.eth.get_block(blockNumber)["timestamp"]
+                    except:
+                        timestamp = 0
+                    sql = insertG("trades", [address, recipient, offerer, token, str(price), txHash, "opensea", str(datetime.datetime.fromtimestamp(timestamp))])
+                    PostgresConnection().insert(sql)
+
+
+
 
 
 

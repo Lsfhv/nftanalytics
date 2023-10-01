@@ -10,6 +10,8 @@ from analytics.Volume import computeVolume
 
 monitoring = {}
 
+validAddress = lambda x : True if len(x) == 42 and x[:2] == "0x" else False
+
 async def main():
     f = open('src/input').readlines()
     p = 0
@@ -31,13 +33,16 @@ async def main():
 async def processInput():
     while True:
         address = await ainput("Enter address: ")
+
+        if validAddress(address):
+            
+            if address not in monitoring:
+                collection = Collection( address)
+                monitoring[address] = collection
+                asyncio.create_task(collection.start())                
+            else:
+                print("Already monitoring this collection!") 
         
-        if address not in monitoring:
-            collection = Collection( address)
-            monitoring[address] = collection
-            asyncio.create_task(collection.start())                
-        else:
-            print("Already monitoring this collection!") 
 
 
 if __name__ == '__main__':
