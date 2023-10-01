@@ -16,7 +16,7 @@ w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
 
 contract = w3.eth.contract(abi=abi)
 
-receipt = w3.eth.get_transaction_receipt('0xd06fdf7afe129ce53e222d278384c4297b77d88c058cf8e74709e9b8e970efcc')["logs"][0]
+receipt = w3.eth.get_transaction_receipt('0x160e3126f2cc1666080143b77ab9470cf129468bcb6016865688f565e9a7bd49')["logs"][0]
 
 x = contract.events.OrderFulfilled().process_log(receipt)["args"]
 

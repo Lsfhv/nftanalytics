@@ -12,6 +12,17 @@ from Postgresql import PostgresConnection
 import datetime
 from Keys import abi, blurMakerPackedTopic, blurPackedTopic, blurTakerPackedTopic, transferTopic, openseaOrderFulfilledTopic
 
+def getTimestampInEpoch(txHash: str):
+    w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
+    blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
+
+    try:
+        timestamp = w3.eth.get_block(blockNumber)["timestamp"]
+    except:
+        timestamp = 0
+    
+    return timestamp
+
 async def monitorTransfers(address: str):
     """
     Listens to the blockchain for transfer events.
@@ -66,19 +77,13 @@ async def monitorTransfers(address: str):
                     price = collectionPriceSide[:len(collectionPriceSide)-40][2:][1:]
                 price = int(price, 16)
 
-                blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
-
-                try:
-                    timestamp = w3.eth.get_block(blockNumber)["timestamp"]
-                except:
-                    timestamp = 0
-
+                timestamp = getTimestampInEpoch(txHash)
                 if (eventSignature == blurMakerPackedTopic and src == trader and collection == address.lower() and token == tokenId) or ((eventSignature == blurTakerPackedTopic or eventSignature == blurPackedTopic) and dst == trader and collection == address.lower() and token == tokenId):
                     sql = insertG("trades", [address, src, dst, tokenId, str(price), txHash, "blur", str(datetime.datetime.fromtimestamp(timestamp))])  
                     PostgresConnection().insert(sql)
             elif eventSignature == openseaOrderFulfilledTopic:
                 decoded = contract.events.OrderFulfilled().process_log(event)["args"]
-                # print(txHash)
+
                 offerer = decoded['offerer']
                 recipient = decoded['recipient']
                 
@@ -92,22 +97,16 @@ async def monitorTransfers(address: str):
                     for i in consideration:
                         price += i['amount']
 
-                    blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
-                    try:
-                        timestamp = w3.eth.get_block(blockNumber)["timestamp"]
-                    except:
-                        timestamp = 0
-
+                    timestamp = getTimestampInEpoch(txHash)
                     sql = insertG("trades", [address, offerer, recipient, token, str(price), txHash, "opensea", str(datetime.datetime.fromtimestamp(timestamp))])
                     PostgresConnection().insert(sql)
                 elif src == recipient.lower() and dst == offerer.lower() and token == decoded['consideration'][0]['identifier']:
-                    # print("or we got here")
+                    # Someone sold into bids.
+                    # src = the nft holder, dst = the bid poster
+
                     price = decoded['offer'][0]['amount']
-                    blockNumber = w3.eth.get_transaction_receipt(txHash)["blockNumber"]
-                    try:
-                        timestamp = w3.eth.get_block(blockNumber)["timestamp"]
-                    except:
-                        timestamp = 0
+
+                    timestamp = getTimestampInEpoch(txHash)
                     sql = insertG("trades", [address, recipient, offerer, token, str(price), txHash, "opensea", str(datetime.datetime.fromtimestamp(timestamp))])
                     PostgresConnection().insert(sql)
 
