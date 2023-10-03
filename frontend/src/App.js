@@ -21,7 +21,6 @@ function App() {
                             <div><ActivityTable></ActivityTable></div>
                         </div>
                     }></Route>
-                    <Route path='/x' element={<div>zee</div>}></Route>
                 </Routes>
             </main>
         </BrowserRouter>

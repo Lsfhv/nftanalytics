@@ -1,0 +1,17 @@
+.trades { 
+    table-layout: fixed;
+    width: 100%;
+    text-align:center;
+    /* overflow-y: auto; */
+}
+
+.trades-container::-webkit-scrollbar {
+    display: none;
+}
+
+.trades-container {
+    overflow: auto;
+    height: 500px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
