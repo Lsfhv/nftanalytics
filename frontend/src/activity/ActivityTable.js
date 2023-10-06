@@ -12,7 +12,7 @@ function ActivityTable () {
         const ws = new WebSocket('ws://127.0.0.1:5000/trades'); 
 
         const collectionAddress = async () => {
-            const response = await fetch('http://127.0.0.1:5000/getaddress/' + params['slug']);            
+            const response = await fetch('http://127.0.0.1:8080/getaddress?slug=' + params['slug']);            
             return response.json();
         }
 
@@ -35,7 +35,7 @@ function ActivityTable () {
     
         ws.onopen = async () => {
 
-            const address = (await collectionAddress())[0]['result']['0']
+            const address = (await collectionAddress())['address']
 
             ws.send(JSON.stringify({address: address}))
         }

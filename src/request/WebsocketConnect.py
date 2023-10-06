@@ -36,5 +36,5 @@ async def getEvent(address: str, topics: list[str], q: asyncio.Queue):
                 await ws.send(jsonData)
                 subscription_response = await ws.recv()
 
-                print(f"Websocket error reconnected? , {subscription_response}")
+                print(f"Websocket error reconnected? {address} , {subscription_response}")
                                 

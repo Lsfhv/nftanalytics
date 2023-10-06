@@ -27,7 +27,7 @@ async def getVolume(address: str, timePeriod: Interval, ws):
         ws.send(data)
         await asyncio.sleep(timePeriod)
 
-async def getVolumeMain(address: str, timePeriods: list[str], ws):
+async def getVolumeMain(ws, address: str, timePeriods: list[str]):
     """
     Starts the volume runners. 
     """

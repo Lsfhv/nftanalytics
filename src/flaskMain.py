@@ -13,6 +13,16 @@ sock = Sock(app)
 
 CORS(app)
 
+@sock.route('/getvolume/<slug>')
+def getVolume(ws):
+    data = ws.receive()
+
+    data = json.loads(data)
+    address = data['address']
+    intervals = data['intervals']
+
+    asyncio.run(getVolumeMain(ws, address, intervals))
+
 @sock.route('/trades')
 def getTrades(ws):
     data = ws.receive()
@@ -20,32 +30,5 @@ def getTrades(ws):
     address = data['address']
 
     asyncio.run(getTradesMain(ws, address))
-
-@app.route('/getname/<slug>')
-def getName(slug):
-    slug = escape(slug)
-
-    response = PostgresConnection().readonly(f"select display_name from slug where opensea='{slug}'")
-
-    if len(response) == 0:
-        response = {"result": ["error"]}
-    else:
-        response = {"result": [response[0][0]]}
-
-    return response
-
-
-@app.route('/getaddress/<slug>')
-def getAddress(slug):
-    slug = escape(slug)
-    response = PostgresConnection().readonly(f"select address from slug where opensea='{slug}'")
-
-    if len(response) == 0:
-        response = {"result": ["error"]}
-    else:
-        response = {"result": [response[0][0]]}
-
-    print(response)
-    return [response]
 
 app.run()

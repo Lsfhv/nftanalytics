@@ -2,7 +2,6 @@ import './Statsbar.css';
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-
 function Statsbar() {
     const params = useParams();
     
@@ -20,13 +19,12 @@ function Statsbar() {
     useEffect(() => {
         const collectionName = async () => {
             const response = await fetch(
-                'http://127.0.0.1:5000/getname/' + params['slug']);
+                'http://127.0.0.1:8080/getdisplayname?slug=' + params['slug']);
             const data = await response.json();
             
-            setCollection(collection => data.result[0]);
+            setCollection(collection => data['display_name']);
         };
 
-        
         collectionName();
 
     }, [params['slug']]);
