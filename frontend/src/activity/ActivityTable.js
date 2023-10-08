@@ -9,7 +9,7 @@ function ActivityTable () {
 
     useEffect(() =>{
 
-        const ws = new WebSocket('ws://127.0.0.1:5000/trades'); 
+        const ws = new WebSocket('ws://127.0.0.1:8080/trades'); 
 
         const collectionAddress = async () => {
             const response = await fetch('http://127.0.0.1:8080/getaddress?slug=' + params['slug']);            
@@ -20,27 +20,20 @@ function ActivityTable () {
             let data = event.data;
             data = JSON.parse(data);
 
-            // data = data.map(i => {
-            //     let dateTime = new Date(i[7] * 1000);
-            //     return [i[1], i[2], i[3], i[4] / 1e18, `${dateTime.getDay() + 1}/${dateTime.getMonth() + 1}/${dateTime.getFullYear()} ${dateTime.getHours()}:${dateTime.getMinutes()}:${dateTime.getSeconds()}`];
-            // });
-
             data = data.map(i => {
-                let dateTime = new Date(i[7] * 1000);
-                return [i[1], i[2], i[3], i[4] / 1e18];
+                return [i['src'], i['dst'], i['token_id'], i['value'] / 1e18];
             });
-
             setTransactions(transactions => data);
         }
     
         ws.onopen = async () => {
-
             const address = (await collectionAddress())['address']
 
             ws.send(JSON.stringify({address: address}))
         }
 
         return () => {
+            console.log("called?")
             ws.close();
         }
     }, [params['slug']])
