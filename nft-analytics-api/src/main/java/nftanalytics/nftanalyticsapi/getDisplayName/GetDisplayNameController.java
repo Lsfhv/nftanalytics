@@ -1,4 +1,4 @@
-package nftanalytics.nftanalyticsapi;
+package nftanalytics.nftanalyticsapi.getDisplayName;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

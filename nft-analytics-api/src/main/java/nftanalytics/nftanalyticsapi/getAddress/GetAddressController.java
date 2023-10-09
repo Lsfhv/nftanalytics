@@ -1,4 +1,4 @@
-package nftanalytics.nftanalyticsapi;
+package nftanalytics.nftanalyticsapi.getAddress;
 
 import java.util.HashMap;
 

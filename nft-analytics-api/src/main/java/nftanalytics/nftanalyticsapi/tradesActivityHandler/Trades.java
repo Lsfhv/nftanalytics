@@ -1,4 +1,4 @@
-package nftanalytics.nftanalyticsapi;
+package nftanalytics.nftanalyticsapi.tradesActivityHandler;
 
 import java.util.ArrayList;
 

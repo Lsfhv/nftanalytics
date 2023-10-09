@@ -9,9 +9,9 @@ function Searchbar() {
             event.preventDefault();
             const input = event.target.value;
 
-            let response = await fetch("http://127.0.0.1:5000/getaddress/" + input)
+            let response = await fetch("http://127.0.0.1:8080/getaddress?slug=" + input)
             response = await response.json()
-            if (response[0]['result'][0] != 'error') {
+            if (response['address'] != '') {
                 event.target.value = '';
                 navigate('/' + input);
             } 

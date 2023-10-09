@@ -1,4 +1,4 @@
-package nftanalytics.nftanalyticsapi;
+package nftanalytics.nftanalyticsapi.tradesActivityHandler;
 
 public class TradesInput {
     

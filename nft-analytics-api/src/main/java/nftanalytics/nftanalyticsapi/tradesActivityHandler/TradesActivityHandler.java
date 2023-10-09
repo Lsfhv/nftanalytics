@@ -1,4 +1,4 @@
-package nftanalytics.nftanalyticsapi;
+package nftanalytics.nftanalyticsapi.tradesActivityHandler;
 
 import java.util.ArrayList;
 
@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nftanalytics.nftanalyticsapi.database.PostgresSQL;
 
 @Component
-public class SocketHandler extends TextWebSocketHandler {
+public class TradesActivityHandler extends TextWebSocketHandler {
 
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message) throws InterruptedException, IOException {
@@ -32,7 +32,6 @@ public class SocketHandler extends TextWebSocketHandler {
             e.printStackTrace();
         }
         Connection conn = new PostgresSQL().getConnection();
-        // new BigInteger("100");
         while (true) {
             try {
                 Statement st = conn.createStatement();
@@ -45,10 +44,7 @@ public class SocketHandler extends TextWebSocketHandler {
                     trades.add(trade);
                 }
 
-
                 session.sendMessage(new TextMessage(mapper.writeValueAsString(trades)));
-
-                // session.sendMessage(input);
             } catch (Exception e) { 
                 e.printStackTrace();
             }
@@ -64,8 +60,6 @@ public class SocketHandler extends TextWebSocketHandler {
 
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-		// //the messages will be broadcasted to all users.
-		// // sessions.add(session);
         System.out.println("got a connection");
 	}
 }
