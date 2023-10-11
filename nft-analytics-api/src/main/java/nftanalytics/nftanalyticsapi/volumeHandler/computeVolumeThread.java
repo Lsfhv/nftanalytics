@@ -36,7 +36,6 @@ public class computeVolumeThread extends Thread {
         ObjectMapper mapper = new ObjectMapper();
         while (true) {
             long currentTime = getEpochTime() ;
-            // long volume = 0;
             
             BigInteger volume = new BigInteger("0");
             try {
@@ -50,7 +49,14 @@ public class computeVolumeThread extends Thread {
                 }
 
                 VolumeOutput vo = new VolumeOutput(volume, timePeriod);
-                session.sendMessage(new TextMessage(mapper.writeValueAsString(vo)));
+
+                if (!session.isOpen()) {
+                    break;
+                }
+                synchronized (session) {
+                    session.sendMessage(new TextMessage(mapper.writeValueAsString(vo)));
+                }
+                
 
             } catch (Exception e) {
                 e.printStackTrace();

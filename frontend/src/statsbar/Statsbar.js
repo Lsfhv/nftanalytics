@@ -2,6 +2,11 @@ import './Statsbar.css';
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
+const FIFTEENMINUTES = 15 * 60;
+const ONEHOUR = 60 * 60; 
+const ONEDAY = 24 * ONEHOUR;
+const ONEWEEK = 7 * ONEDAY;
+
 function Statsbar() {
     const params = useParams();
     
@@ -12,20 +17,52 @@ function Statsbar() {
 
     const [collection, setCollection] = useState('Loading');
 
-    const msg = {
-        slug: params['slug'],
-        params: ["15m", "1H", "1D", "1W"]
-    }
     useEffect(() => {
-        const collectionName = async () => {
+        const setCollectionName = async () => {
             const response = await fetch(
                 'http://127.0.0.1:8080/getdisplayname?slug=' + params['slug']);
             const data = await response.json();
             
             setCollection(collection => data['display_name']);
         };
+        const collectionAddress = async () => {
+            const response = await fetch('http://127.0.0.1:8080/getaddress?slug=' + params['slug']);            
+            return response.json();
+        }
 
-        collectionName();
+        const ws = new WebSocket('ws://127.0.0.1:8080/volume');
+        
+        ws.onopen = async () => {
+            const address = (await collectionAddress())['address']
+
+            ws.send(JSON.stringify({address: address, timePeriods: [
+                FIFTEENMINUTES, 
+                ONEHOUR, 
+                ONEDAY, 
+                ONEWEEK
+            ]}))
+        }
+
+        ws.onmessage = (event) => {
+            let data = event.data;
+            data = JSON.parse(data);
+
+            if (data['timePeriod'] == FIFTEENMINUTES) {
+                set15m(_15m => (data['volume'] / 1e18).toFixed(2))
+            } else if (data['timePeriod'] == ONEHOUR) {
+                set1H(_1H=>(data['volume'] / 1e18).toFixed(2))
+            } else if (data['timePeriod'] == ONEDAY) {
+                set1D(_1D => (data['volume'] / 1e18).toFixed(2));
+            } else if (data['timePeriod'] == ONEWEEK){
+                set1W(_1W => (data['volume'] / 1e18).toFixed(2));
+            }
+        } 
+
+        setCollectionName();
+
+        return () => {
+            ws.close();
+        }
 
     }, [params['slug']]);
 
