@@ -16,6 +16,10 @@ form {
 
 .search-bar-component {
     padding: 20px;
+    border-style: solid;
+    border-left: none;
+    border-right: none;
+    border-color: #1a1a1a;
 }
 
 span.place {

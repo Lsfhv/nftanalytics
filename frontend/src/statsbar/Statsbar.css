@@ -1,3 +1,13 @@
 .stats-component{
     padding: 20px;
+    /* border-style: dashed; */
+}
+
+.stats {
+    border-style: solid;
+    border-top: none;
+    border-color: #1a1a1a;
+    border-left: none;
+    border-right:none;
+    padding: 20px;
 }

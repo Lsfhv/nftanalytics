@@ -34,7 +34,7 @@ public class TradesThread  extends Thread {
                 ArrayList<Trade> trades = new ArrayList<>();
 
                 while (rs.next()) {            
-                    Trade trade = new Trade(rs.getString("src"), rs.getString("dst"), rs.getInt("token_id"), new BigInteger(rs.getString("price"))); 
+                    Trade trade = new Trade(rs.getString("tx_hash"),rs.getString("src"), rs.getString("dst"), rs.getInt("token_id"), new BigInteger(rs.getString("price"))); 
                     trades.add(trade);
                 }
 

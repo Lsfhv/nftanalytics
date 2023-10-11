@@ -19,9 +19,8 @@ function ActivityTable () {
         ws.onmessage = (event) => {
             let data = event.data;
             data = JSON.parse(data);
-
             data = data.map(i => {
-                return [i['src'], i['dst'], i['token_id'], i['value'] / 1e18];
+                return [i['txHash'], i['src'].slice(0,7), i['dst'].slice(0,7), i['token_id'], i['value'] / 1e18];
             });
             setTransactions(transactions => data);
         }
@@ -33,11 +32,13 @@ function ActivityTable () {
         }
 
         return () => {
-            console.log("Its closed!");
-            
             ws.close(1000);
         }
     }, [params['slug']])
+
+    function handleRowClick(event, index) {
+        const nw = window.open("https://etherscan.io/tx/" +transactions[index][0]);
+    }
 
     return (
         <div className="trades-container">
@@ -52,8 +53,8 @@ function ActivityTable () {
                 </thead>
                 <tbody>
                     {transactions.map((transaction, i)=>
-                        <tr>
-                            {transaction.map(item=><td>{item}</td>)}
+                        <tr onClick={e => handleRowClick(e, i)}>
+                            {transaction.slice(1).map(item=><td>{item}</td>)}
                         </tr>)}
                 </tbody>
             </table>
