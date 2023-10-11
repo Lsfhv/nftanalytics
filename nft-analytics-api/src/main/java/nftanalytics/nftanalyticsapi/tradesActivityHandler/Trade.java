@@ -16,4 +16,8 @@ public class Trade {
     }
 
     public Trade() {}
+
+    public String toString() {
+        return "src: " + src + " dst: " + dst + " id: " + token_id + " value: " + value;
+    }
 }

@@ -33,8 +33,9 @@ function ActivityTable () {
         }
 
         return () => {
-            console.log("called?")
-            ws.close();
+            console.log("Its closed!");
+            
+            ws.close(1000);
         }
     }, [params['slug']])
 

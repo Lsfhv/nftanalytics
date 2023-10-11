@@ -14,5 +14,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
 		registry.addHandler(new TradesActivityHandler(), "/trades").setAllowedOrigins("*");
 		registry.addHandler(new VolumeHandler(), "/volume").setAllowedOrigins("*");
+		// registry.addHandler(new AppTextWebSocketHandler(), "/ws").setAllowedOrigins("*");
 	}
 }

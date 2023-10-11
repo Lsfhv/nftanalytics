@@ -8,4 +8,8 @@ public class Trades {
     public Trades() {
         
     }
+    
+    public String toString() {
+        return "[" + trades.size() + "]";
+    }
 }
