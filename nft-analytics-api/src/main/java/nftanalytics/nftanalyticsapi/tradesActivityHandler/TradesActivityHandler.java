@@ -17,8 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class TradesActivityHandler extends TextWebSocketHandler {
 
-    HashMap<Integer, WebSocketSession> mapu = new HashMap<>();
-
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message) throws InterruptedException, IOException {
         ObjectMapper mapper = new ObjectMapper();

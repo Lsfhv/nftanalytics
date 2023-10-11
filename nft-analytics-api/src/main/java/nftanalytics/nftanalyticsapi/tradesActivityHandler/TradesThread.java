@@ -15,8 +15,8 @@ import nftanalytics.nftanalyticsapi.database.PostgresSQL;
 
 public class TradesThread  extends Thread {
 
-    WebSocketSession session; 
-    String address; 
+    private WebSocketSession session; 
+    private String address; 
 
     public TradesThread(WebSocketSession session, String address) {
         this.session = session;
