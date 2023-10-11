@@ -1,7 +1,6 @@
 package nftanalytics.nftanalyticsapi.tradesActivityHandler;
 
 
-import java.util.HashMap;
 
 import java.io.IOException;
 
