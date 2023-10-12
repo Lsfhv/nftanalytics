@@ -53,7 +53,7 @@ function ActivityTable () {
                 </thead>
                 <tbody>
                     {transactions.map((transaction, i)=>
-                        <tr onClick={e => handleRowClick(e, i)}>
+                        <tr onClick={e => handleRowClick(e, i)} className="trade-row">
                             {transaction.slice(1).map(item=><td>{item}</td>)}
                         </tr>)}
                 </tbody>

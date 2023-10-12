@@ -6,6 +6,8 @@ import Statsbar from './statsbar/Statsbar';
 import React from 'react';
 import ActivityTable from './activity/ActivityTable';
 
+import CollectionTable from './collections/CollectionsTable';
+
 import { BrowserRouter, Routes, Route, Link, useParams } from 'react-router-dom';
 
 function App() {
@@ -14,7 +16,9 @@ function App() {
             <div><SearchbarComponent></SearchbarComponent></div>
             <main>
                 <Routes>
-                    <Route path='/' element={<div>Just the home pages</div>}></Route>
+                    <Route path='/' element={
+                        <CollectionTable></CollectionTable>
+                    }></Route>
                     <Route path='/:slug' element={
                         <div>
                             <div><Statsbar></Statsbar></div>

@@ -3,6 +3,7 @@
     width: 100%;
     text-align:center;
     /* overflow-y: auto; */
+    border-collapse: collapse;
 }
 
 .trades-container::-webkit-scrollbar {
@@ -10,10 +11,14 @@
 }
 
 th {
-    color: #1a1a1a;
+    color: red;
+    top: 0;
+    position: sticky;
+    background-color: black;
+    padding: 20px;
 }
 
-tr:hover {
+.trade-row:hover {
     background-color: #1a1a1a;
 }
 
@@ -28,7 +33,7 @@ td {
     scrollbar-width: none;
     -ms-overflow-style: none;
     /* padding: 30px; */
-    padding-top: 30px;
+    /* padding-top: 30px; */
     border-style: solid;
     border-color: #1a1a1a;
     border-top: none;

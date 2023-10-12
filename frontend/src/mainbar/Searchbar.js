@@ -26,9 +26,14 @@ function Searchbar() {
 }
 
 function SearchbarComponent() {
+    const navigate = useNavigate();
+    function homeClick() {
+        navigate('/')
+    }
+
     return (
         <div className='search-bar-component'>
-            <span className='place'>NFT Analytics</span>
+            <span className='place' onClick={homeClick}>NFT Analytics</span>
             <span className='place'>
                 Place Holder
             </span>

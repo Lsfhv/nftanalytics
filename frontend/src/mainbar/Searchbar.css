@@ -6,6 +6,15 @@
     height: 30px;
 }
 
+.place {
+    /* color: red; */
+    color: #1a1a1a;
+}
+
+.place:hover {
+    color: white;
+}
+
 /* .search-bar-span-container {
     padding: 0px;
 } */
