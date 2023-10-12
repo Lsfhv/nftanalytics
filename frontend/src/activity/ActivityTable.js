@@ -41,8 +41,8 @@ function ActivityTable () {
     }
 
     return (
-        <div className="trades-container">
-            <table className="trades">
+        <div className="table-container">
+            <table className="table-object">
                 <thead>
                     <tr>
                         <th>Source</th>
@@ -53,7 +53,7 @@ function ActivityTable () {
                 </thead>
                 <tbody>
                     {transactions.map((transaction, i)=>
-                        <tr onClick={e => handleRowClick(e, i)} className="trade-row">
+                        <tr onClick={e => handleRowClick(e, i)} className="table-row-entry">
                             {transaction.slice(1).map(item=><td>{item}</td>)}
                         </tr>)}
                 </tbody>

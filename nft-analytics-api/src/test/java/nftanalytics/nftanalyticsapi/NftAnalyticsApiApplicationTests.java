@@ -8,6 +8,7 @@ class NftAnalyticsApiApplicationTests {
 
 	@Test
 	void contextLoads() {
+		
 	}
 
 }

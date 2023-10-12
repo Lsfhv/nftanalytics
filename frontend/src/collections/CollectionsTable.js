@@ -26,8 +26,8 @@ function CollectionTable() {
     }
 
     return (
-        <>
-            <table className='collections-table'>
+        <div className='table-container'>
+            <table className='table-object'>
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -38,14 +38,14 @@ function CollectionTable() {
                 <tbody>
                     {
                         collections.map((collection, i) => 
-                            <tr onClick={e => handleClick(e,i)}>
+                            <tr onClick={e => handleClick(e,i)} className='table-row-entry'>
                                 <td>{collection['collectionName']}</td>
                             </tr>
                         )
                     }
                 </tbody>
             </table>
-        </>
+        </div>
     )
 }
 

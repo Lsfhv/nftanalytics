@@ -13,14 +13,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nftanalytics.nftanalyticsapi.database.PostgresSQL;
 
-public class computeVolumeThread extends Thread {
+public class ComputeVolumeThread extends Thread {
 
     WebSocketSession session ; 
     String address; 
     long timePeriod;
     Connection conn; 
 
-    public computeVolumeThread(WebSocketSession session, String address, long timePeriod)  {
+    public ComputeVolumeThread(WebSocketSession session, String address, long timePeriod)  {
         this.session = session;
         this.address = address; 
         this.timePeriod = timePeriod;

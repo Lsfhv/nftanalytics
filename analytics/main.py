@@ -13,7 +13,7 @@ monitoring = {}
 validAddress = lambda x : True if len(x) == 42 and x[:2] == "0x" else False
 
 async def main():
-    f = open('src/input').readlines()
+    f = open('analytics/input').readlines()
     p = 0
     while p < len(f):
         address = f[p].strip()

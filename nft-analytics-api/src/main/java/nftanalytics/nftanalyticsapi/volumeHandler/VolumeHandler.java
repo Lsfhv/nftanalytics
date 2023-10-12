@@ -23,7 +23,7 @@ public class VolumeHandler extends TextWebSocketHandler {
         }
         
         for (long timePeriod: input.timePeriods) {
-            computeVolumeThread thread = new computeVolumeThread(session, input.address, timePeriod);
+            ComputeVolumeThread thread = new ComputeVolumeThread(session, input.address, timePeriod);
             thread.start();
         }
 

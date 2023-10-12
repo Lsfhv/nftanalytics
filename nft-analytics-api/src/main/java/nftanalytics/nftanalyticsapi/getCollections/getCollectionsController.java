@@ -16,7 +16,7 @@ import java.util.ArrayList;
 
 @CrossOrigin
 @RestController
-public class getCollectionsController {
+public class GetCollectionsController {
     
     @RequestMapping("/getcollections") 
     public String getCollections() throws JsonProcessingException {

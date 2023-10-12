@@ -1,5 +1,6 @@
 import './App.css';
 import './Taskbar.js';
+import './styles/TableStyles.css'
 
 import SearchbarComponent from './mainbar/Searchbar';
 import Statsbar from './statsbar/Statsbar';
