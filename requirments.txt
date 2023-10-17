@@ -1,4 +1,5 @@
 requests
+wheel
 psycopg2 
 web3
 matplotlib

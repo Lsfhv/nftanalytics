@@ -6,9 +6,9 @@ import java.sql.SQLException;
 
 public class PostgresSQL {
 
-    private final String url = "jdbc:postgresql://127.0.0.1:5432/nfttest";
-    private final String user = "snow";
-    private final String password = "";
+    private final String url = "jdbc:postgresql://127.0.0.1:5432/nftanalytics";
+    private final String user = "postgres";
+    private final String password = "x";
 
     private Connection conn = null;
 

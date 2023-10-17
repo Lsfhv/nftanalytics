@@ -27,7 +27,7 @@ async def monitorTransfers(address: str):
     """
     Listens to the blockchain for transfer events.
     """
-    
+
     w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
     q = asyncio.Queue()
     

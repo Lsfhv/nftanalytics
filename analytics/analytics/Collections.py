@@ -2,7 +2,7 @@
 within past day/week/month.
 """
 
-from request.getRequest import get, getABI
+from request.getRequest import get
 from time import time
 
 from Postgresql import PostgresConnection
