@@ -12,13 +12,13 @@ from datetime import datetime
 from sql.sqlQGenerator import insertG, updateG
 from time import sleep
 from Keys import openseaBaseEndpointV1, openseaBaseEndpointV2, openseaHeaders
-from Intervals import HOUR, MINUTE, FIFTEENMINUTES
+from Intervals import HOUR, MINUTE, FIFTEENMINUTES, intervals
 import asyncio
 from analytics.Transfers import monitorTransfers
 from analytics.Volume import computeVolume
 from web3 import Web3
 import os
-import json
+
 
 class Collection:
 
@@ -33,6 +33,9 @@ class Collection:
         
     async def start(self):
         asyncio.create_task(monitorTransfers(self.address))
+
+        for interval in intervals:
+            pass
         
     def slugExists(self):
         """

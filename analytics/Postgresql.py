@@ -6,15 +6,15 @@ class PostgresConnection:
     Returns a connection to the postgres db.
     """
     def __init__(self):
-        self.host = '127.0.0.1'
-        self.port = '5432'
-        self.user = 'postgres'
-        self.db = 'nftanalytics'
+        self.host = os.environ['PGSQLHOST']
+        self.port = os.environ['PGSQLPORT']
+        self.user = os.environ['USER']
+        self.db = os.environ['PGSQLDB']
 
         self.connection = self.connect()
 
     def connect(self):
-        connection = psycopg2.connect(database=self.db, user=self.user, password='x', host=self.host, port=self.port)
+        connection = psycopg2.connect(database=self.db, user=self.user, password='', host=self.host, port=self.port)
         return connection
     
     def insert(self, sql):

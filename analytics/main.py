@@ -6,7 +6,8 @@ from analytics.Collections import Collection
 import asyncio
 from aioconsole import ainput
 from analytics.Transfers import monitorTransfers
-from analytics.Volume import computeVolume
+import analytics.analytics.stats.Holders
+import analytics.analytics.stats.Volume
 
 monitoring = {}
 
@@ -44,7 +45,8 @@ async def processInput():
                 print("Already monitoring this collection!") 
         
 if __name__ == '__main__':
-    asyncio.run(main())
+    # asyncio.run(main())
+    pass
 
 
 
