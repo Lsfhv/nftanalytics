@@ -7,6 +7,14 @@ import os
 infuraurl = lambda x : f"https://mainnet.infura.io/v3/{x}"
 infuraurlsepolia = lambda x : f"https://sepolia.infura.io/v3/{x}"
 
+# infura nft api
+# curl -X 'GET' \
+#   -u $INFURAKEY:$INFURASECRET \
+#   'https://nft.api.infura.io/networks/1/nfts/0x1A92f7381B9F03921564a437210bB9396471050C/owners' \
+#   -H 'accept: application/json'
+
+infuraNftApi = lambda address : f'https://nft.api.infura.io/networks/1/nfts/{address}/owners'
+
 # https://opensea.io/
 openseaKey = os.environ['OSKEY']
 

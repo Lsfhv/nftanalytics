@@ -21,12 +21,6 @@ web3 = Web3(Web3.HTTPProvider(infuraUrl))
 #                     pass
 #             lastBlock = block['number']
 
-
-
-
-
-
-
 # def get(address):
 #     url = etherscanGetAbi(address, etherscanKey)
 
