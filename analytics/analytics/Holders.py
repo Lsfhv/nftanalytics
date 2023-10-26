@@ -1,27 +1,26 @@
-"""
-Count how many unique holders there are of a collection.
-"""
-from web3 import Web3
 import os
-import json
+import requests
+from Keys import infuraNftApi
 
-def computeUniqueOwners(address: str):
-    w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
-    erc721abi = json.load(open('abis/Erc721Abi.json')) 
+def computeUniqueOwners(address: str) -> int:
+    """Computes the number of unique owners for given address
 
-    contract = w3.eth.contract(address, abi=erc721abi)
-    
-    totalSupply = contract.functions.totalSupply().call()
-    
+    Args:
+        address (str): contract address
+
+    Returns:
+        int: how many unique owners there are
+    """
+    response = requests.get(infuraNftApi(address), auth = (os.environ["INFURAKEY"], os.environ["INFURASECRET"])).json()
+    cursor = response['cursor']
     owners = set()
+    for i in response['owners']:
+        owners.add(i['ownerOf'])
+        
+    while cursor != None:
+        response = requests.get(infuraNftApi(address)+f"?cursor={cursor}", auth= (os.environ["INFURAKEY"], os.environ["INFURASECRET"])).json()
+        cursor = response['cursor']
+        for i in response['owners']:
+            owners.add(i['ownerOf'])
 
-    for i in range(0, totalSupply):
-        owner = contract.functions.ownerOf(i).call()
-        owners.add(owner)
-
-    print(len(owners))
-
-    return (len(owners), totalSupply)
-
-computeUniqueOwners('0x1A92f7381B9F03921564a437210bB9396471050C')
-
+    return len(owners)
