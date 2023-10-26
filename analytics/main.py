@@ -43,13 +43,8 @@ async def processInput():
             else:
                 print("Already monitoring this collection!") 
         
-
-
 if __name__ == '__main__':
     asyncio.run(main())
-    # collection = Collection('', '0xED5AF388653567Af2F388E6224dC7C4b3241C544')
-    # x =  asyncio.run(getVolume('0x8821bee2ba0df28761afff119d66390d594cd280', DAY))
-    # print(x)
 
 
 
