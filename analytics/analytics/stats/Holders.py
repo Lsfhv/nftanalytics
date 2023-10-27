@@ -1,7 +1,6 @@
 import os
 from Keys import infuraNftApi
 from request.getRequest import get
-from Intervals import FIFTEENMINUTES, HOUR, DAY, WEEK
 
 async def computeUniqueOwners(address: str) -> int:
     """Computes the number of unique owners for given address

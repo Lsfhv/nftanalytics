@@ -15,7 +15,6 @@ from Keys import openseaBaseEndpointV1, openseaBaseEndpointV2, openseaHeaders
 from Intervals import HOUR, MINUTE, FIFTEENMINUTES, intervals
 import asyncio
 from analytics.Transfers import monitorTransfers
-from analytics.Volume import computeVolume
 from web3 import Web3
 import os
 
@@ -32,10 +31,10 @@ class Collection:
         self.slugExists()
         
     async def start(self):
-        asyncio.create_task(monitorTransfers(self.address))
+        """Start monitoring transfers for this collection.
 
-        for interval in intervals:
-            pass
+        """
+        asyncio.create_task(monitorTransfers(self.address))
         
     def slugExists(self):
         """

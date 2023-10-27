@@ -1,4 +1,3 @@
-from Holders import computeUniqueOwners
 from Postgresql import PostgresConnection
 from Intervals import FIFTEENMINUTES, HOUR, DAY, WEEK
 from time import time
@@ -6,6 +5,7 @@ import asyncio
 from web3 import Web3
 import os
 import json
+from analytics.stats.Holders import computeUniqueOwners
 
 tables = {
     FIFTEENMINUTES: 'fifteenminutesstats', 
