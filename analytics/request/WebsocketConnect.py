@@ -28,6 +28,8 @@ class WsConnect:
         self.customTradesAbi = json.load(open('analytics/abis/CustomTradesAbi.json'))
         
     async def connect(self) -> None:
+        """Connect to ws endpoint
+        """
         self.ws = await connect(f"wss://mainnet.infura.io/ws/v3/{os.environ['INFURAAPIKEY']}")
         
         self.isConnected = True
@@ -54,7 +56,13 @@ class WsConnect:
 
             # print(len(self.subscriptionToAddress))
 
-    async def sendMessage(self, address, topics):
+    async def sendMessage(self, address: str, topics: list[str]):
+        """Send a message to ws
+
+        Args:
+            address (str): contract address
+            topics (list[str]): topic list to subscribe to 
+        """
         if self.ws == None:
             return
 
@@ -96,6 +104,7 @@ class WsConnect:
         Start processing messages
         
         """
+
         contract = self.w3.eth.contract(abi= self.customTradesAbi)
         while True:
             message = await self.q.get()
