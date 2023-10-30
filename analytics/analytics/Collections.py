@@ -18,26 +18,28 @@ from analytics.Transfers import monitorTransfers
 from web3 import Web3
 import os
 from analytics.stats.Volume import computeVolumeMain
+from Keys import transferTopic
 
 
 class Collection:
 
-    def __init__(self, address, chain='ethereum'):
+    def __init__(self, address, ws, chain='ethereum'):
         self.address: str = address
         self.chain: str = chain
         self.delay: Interval = HOUR
 
         self.retrieveContract = lambda address: f"/asset_contract/{address}"
-
+        self.ws = ws
         self.slugExists()
         
     async def start(self):
         """Start monitoring transfers for this collection.
 
         """
-        asyncio.create_task(monitorTransfers(self.address))
+        # asyncio.create_task(monitorTransfers(self.address))
+        await self.ws.sendMessage(self.address, [transferTopic])
 
-        asyncio.create_task(computeVolumeMain(self.address))
+        # asyncio.create_task(computeVolumeMain(self.address))
         
     def slugExists(self):
         """
