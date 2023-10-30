@@ -1,11 +1,12 @@
 from Postgresql import PostgresConnection
-from Intervals import FIFTEENMINUTES, HOUR, DAY, WEEK
+from Intervals import FIFTEENMINUTES, HOUR, DAY, WEEK, intervals
 from time import time
 import asyncio 
 from web3 import Web3
 import os
 import json
 from analytics.stats.Holders import computeUniqueOwners
+import datetime
 
 tables = {
     FIFTEENMINUTES: 'fifteenminutesstats', 
@@ -16,10 +17,17 @@ tables = {
 
 def getTotalSupply(address):
     w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
-    abi = json.load(open('abis/Erc721Abi.json'))
-    contract = w3.eth.contract(address, abi)
+    abi = json.load(open('analytics/abis/Erc721Abi.json'))
+    contract = w3.eth.contract(address, abi =abi)
 
-    return contract.functions.totalSupply().call()
+    try:
+        result = contract.functions.totalSupply().call()
+    except:
+        result = -1
+        # print("error : ", address)
+        
+    return result
+    
 
 async def computeVolume(address: str, timeperiod: int):
     """_summary_
@@ -28,21 +36,20 @@ async def computeVolume(address: str, timeperiod: int):
         address (str): _description_
         timeperiod (int): _description_
     """
-    conn = PostgresConnection().connection
 
     while True:
         uniqueOwners = computeUniqueOwners(address) 
         currentTime = time()
 
-        response = conn.readonly(f"select * from where trades where cast(extract(epoch from time_updated) as bigint) >={currentTime - timeperiod}")
+        response = PostgresConnection().readonly(f"select * from trades where cast(extract(epoch from time_updated) as bigint) >={currentTime - timeperiod} and address='{address}'")
 
-        totalVolume = sum([i[4] for i in response])
+        totalVolume = sum([int(i[4]) for i in response])
 
-        conn.insert(f"insert into {tables[timeperiod]} values ({address}, {totalVolume}, {uniqueOwners}, {getTotalSupply(address)}, {time()})")
+        PostgresConnection().insert(f"insert into {tables[timeperiod]} values ('{address}', '{totalVolume}', {uniqueOwners}, {getTotalSupply(address)}, '{str(datetime.datetime.fromtimestamp(int(time())))}')")
 
         await asyncio.sleep(timeperiod)
 
 
-async def computeVolumeMain(address:str, intervals: list[int]):
+async def computeVolumeMain(address:str):
     for i in intervals:
         asyncio.create_task(computeVolume(address, i))

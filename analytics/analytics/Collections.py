@@ -17,6 +17,7 @@ import asyncio
 from analytics.Transfers import monitorTransfers
 from web3 import Web3
 import os
+from analytics.stats.Volume import computeVolumeMain
 
 
 class Collection:
@@ -35,6 +36,8 @@ class Collection:
 
         """
         asyncio.create_task(monitorTransfers(self.address))
+
+        asyncio.create_task(computeVolumeMain(self.address))
         
     def slugExists(self):
         """

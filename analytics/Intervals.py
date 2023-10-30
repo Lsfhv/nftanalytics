@@ -14,7 +14,7 @@ DAY: Interval = Interval(HOUR * Interval(24))
 WEEK: Interval = Interval(DAY * Interval(7))
 MONTH: Interval = Interval(WEEK * Interval(4))
 
-intervals: list[Interval] = [MINUTE, HOUR, SIXHOURS, TWELVEHOURS, DAY, WEEK]
+intervals: list[Interval] = [FIFTEENMINUTES]
 
 def intervalToString(interval: Interval) -> str:
     if interval == MINUTE: return '1m'

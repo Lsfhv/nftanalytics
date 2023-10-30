@@ -6,7 +6,7 @@ from analytics.Collections import Collection
 import asyncio
 from aioconsole import ainput
 from analytics.Transfers import monitorTransfers
-import analytics.stats.Holders
+from analytics.stats.Holders import computeUniqueOwners
 import analytics.stats.Volume
 
 monitoring = {}
@@ -38,7 +38,7 @@ async def processInput():
         if validAddress(address):
             
             if address not in monitoring:
-                collection = Collection( address)
+                collection = Collection(address)
                 monitoring[address] = collection
                 asyncio.create_task(collection.start())                
             else:

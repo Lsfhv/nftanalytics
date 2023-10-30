@@ -49,7 +49,7 @@ async def monitorTransfers(address: str):
         dst = "0x" + dst[len(dst) - 40 : ]
 
         token = int(message['params']['result']['topics'][3], 16)
-        # TODO handle opensea trades.
+        
         for event in receipt["logs"]:
             eventSignature = event["topics"][0].hex()
 
