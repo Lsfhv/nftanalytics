@@ -13,7 +13,6 @@ from sql.sqlQGenerator import insertG
 import datetime
 
 class WsConnect:
-
     def __init__(self) -> None:
         self.isConnected = False
         self.ws = None
