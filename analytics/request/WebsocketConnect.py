@@ -29,7 +29,7 @@ class WsConnect:
         
     async def connect(self) -> None:
         """Connect to ws endpoint
-        """
+        """     
         self.ws = await connect(f"wss://mainnet.infura.io/ws/v3/{os.environ['INFURAAPIKEY']}")
         
         self.isConnected = True
@@ -70,10 +70,8 @@ class WsConnect:
 
         await self.ws.send(message)
 
-        
-
     def messageBuilder(self, id: str, address: str, topics: list[str]) -> dict:
-        """Generate the message that the websocket expects.
+        """Generate the json message that the websocket expects.
 
         Args:
             id (str): Id of the message
@@ -108,8 +106,6 @@ class WsConnect:
         contract = self.w3.eth.contract(abi= self.customTradesAbi)
         while True:
             message = await self.q.get()
-
-            # print("Got a message")
 
             subscription = message['params']['subscription']
             address = self.subscriptionToAddress[subscription]
