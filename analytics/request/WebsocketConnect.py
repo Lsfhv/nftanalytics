@@ -24,8 +24,8 @@ class WsConnect:
 
         self.w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
 
-        self.customTradesAbi = json.load(open('analytics/abis/CustomTradesAbi.json'))
-        
+        self.customTradesAbi = json.load(open('abis/CustomTradesAbi.json'))
+
     async def connect(self) -> None:
         """Connect to ws endpoint
         """     
@@ -57,14 +57,14 @@ class WsConnect:
 
     async def sendMessage(self, address: str, topics: list[str]):
         """Send a message to ws
-
+        
         Args:
             address (str): contract address
             topics (list[str]): topic list to subscribe to 
         """
         if self.ws == None:
             return
-
+        
         message = self.messageBuilder(address, address, topics)
 
         await self.ws.send(message)
@@ -99,7 +99,6 @@ class WsConnect:
     async def startProcessingMessages(self):
         """
         Start processing messages
-        
         """
 
         contract = self.w3.eth.contract(abi= self.customTradesAbi)
@@ -110,8 +109,6 @@ class WsConnect:
             address = self.subscriptionToAddress[subscription]
 
             txHash = message['params']['result']['transactionHash']
-
-            print("Got a message! ", address, txHash)
             
             receipt = self.w3.eth.get_transaction_receipt(txHash)
 

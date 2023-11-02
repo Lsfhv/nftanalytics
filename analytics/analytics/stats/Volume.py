@@ -17,14 +17,13 @@ tables = {
 
 def getTotalSupply(address):
     w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
-    abi = json.load(open('analytics/abis/Erc721Abi.json'))
+    abi = json.load(open('abis/Erc721Abi.json'))
     contract = w3.eth.contract(address, abi =abi)
 
     try:
         result = contract.functions.totalSupply().call()
     except:
         result = -1
-        # print("error : ", address)
         
     return result
     

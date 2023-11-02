@@ -38,13 +38,3 @@ def get(url, endpoint = "", params = {}, headers = {}, auth = None):
         response = requests.get(url, headers = headers, auth = auth)
         
     return response
-
-# def getABI(address):
-#     """
-#     Get the ABI of a contract with etherscan.
-#     """
-#     url = etherscanGetAbi(address, etherscanKey)
-#     response = requests.get(url)
-#     while response.status_code != 200: 
-#         response = requests.get(url)
-#     return response.json()

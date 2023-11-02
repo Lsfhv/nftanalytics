@@ -20,26 +20,42 @@ import os
 from analytics.stats.Volume import computeVolumeMain
 from Keys import transferTopic
 
-
 class Collection:
 
-    def __init__(self, address, ws, chain='ethereum'):
-        self.address: str = address
-        self.chain: str = chain
-        self.delay: Interval = HOUR
+    def __init__(self, address, ws):
+        self.w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
 
-        self.retrieveContract = lambda address: f"/asset_contract/{address}"
-        self.ws = ws
-        self.slugExists()
+        if not self.validateAddress(address):
+            raise Exception("Invalid address")
+        
+        self.address: str = address
+        self.retrieveContract = lambda address: f"/asset_contract/{address}"   
+        if ws != None:
+            self.ws = ws
+            self.slugExists()
+        
+    def validateAddress(self, address: str) -> bool:
+        """Validate address
+
+        Args:
+            address (str): address to validate
+
+        Returns:
+            bool: whether address is valid
+        """
+        
+        code = self.w3.eth.get_code(address)
+        if code == "0x":
+            return False
+        return True
         
     async def start(self):
-        """Start monitoring transfers for this collection.
-
         """
-        # asyncio.create_task(monitorTransfers(self.address))
+            Start listening to transfer events and computing volumes
+        """
         await self.ws.sendMessage(self.address, [transferTopic])
 
-        # asyncio.create_task(computeVolumeMain(self.address))
+        asyncio.create_task(computeVolumeMain(self.address))
         
     def slugExists(self):
         """

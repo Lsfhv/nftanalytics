@@ -19,7 +19,7 @@ async def main():
     asyncio.create_task(x.startHandlingMessages())
     asyncio.create_task(x.startProcessingMessages())
 
-    f = open('analytics/input').readlines()
+    f = open('input').readlines()
     p = 0
     while p < len(f):
         address = f[p].strip()
