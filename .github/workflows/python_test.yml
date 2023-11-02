@@ -35,4 +35,7 @@ jobs:
     - name: Unit tests
       run: |
         cd analytics
+        OSKEY=$OSKEY
+        INFURAKEY=$INFURAKEY
+        INFURAURL=$INFURAURL
         python3 -m unittest discover test 
