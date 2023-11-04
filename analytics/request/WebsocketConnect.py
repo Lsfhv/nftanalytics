@@ -11,11 +11,14 @@ from Postgresql import PostgresConnection
 from Keys import blurMakerPackedTopic, blurPackedTopic, blurTakerPackedTopic, openseaOrderFulfilledTopic
 from sql.sqlQGenerator import insertG
 import datetime
+import sqlite3
 
 class WsConnect:
-    def __init__(self) -> None:
+    def __init__(self, db) -> None:
         self.isConnected = False
         self.ws = None
+
+        self.db = db
 
         self.subscriptions = []
         self.subscriptionToAddress = {}
@@ -24,7 +27,10 @@ class WsConnect:
 
         self.w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
 
-        self.customTradesAbi = json.load(open('abis/CustomTradesAbi.json'))
+        f =open('abis/CustomTradesAbi.json')
+        self.customTradesAbi = json.load(f)
+        f.close()
+        
 
     async def connect(self) -> None:
         """Connect to ws endpoint
@@ -101,6 +107,8 @@ class WsConnect:
         Start processing messages
         """
 
+        self.db.cursor().execute("create table if not exists trades (address varchar(42), src varchar(42), dst varchar(42), tokenid int, price varchar(100), txhash varchar(100), platform varchar(100), timestamp varchar(100))")
+
         contract = self.w3.eth.contract(abi= self.customTradesAbi)
         while True:
             message = await self.q.get()
@@ -150,7 +158,9 @@ class WsConnect:
                     timestamp = self.getTimestampInEpoch(txHash)
                     if (eventSignature == blurMakerPackedTopic and src == trader and collection == address.lower() and token == tokenId) or ((eventSignature == blurTakerPackedTopic or eventSignature == blurPackedTopic) and dst == trader and collection == address.lower() and token == tokenId):
                         sql = insertG("trades", [address, src, dst, tokenId, str(price), txHash, "blur", str(datetime.datetime.fromtimestamp(timestamp))])  
-                        PostgresConnection().insert(sql)
+                        # PostgresConnection().insert(sql)
+                        self.db.cursor().execute(sql)
+                        self.db.commit()
                 elif eventSignature == openseaOrderFulfilledTopic:
                     decoded = contract.events.OrderFulfilled().process_log(event)["args"]
 
@@ -169,7 +179,9 @@ class WsConnect:
 
                         timestamp = self.getTimestampInEpoch(txHash)
                         sql = insertG("trades", [address, offerer, recipient, token, str(price), txHash, "opensea", str(datetime.datetime.fromtimestamp(timestamp))])
-                        PostgresConnection().insert(sql)
+                        # PostgresConnection().insert(sql)
+                        self.db.cursor().execute(sql)
+                        self.db.commit()
                     elif src == recipient.lower() and dst == offerer.lower() and token == decoded['consideration'][0]['identifier']:
                         # Someone sold into bids.
                         # src = the nft holder, dst = the bid poster
@@ -178,4 +190,6 @@ class WsConnect:
 
                         timestamp = self.getTimestampInEpoch(txHash)
                         sql = insertG("trades", [address, recipient, offerer, token, str(price), txHash, "opensea", str(datetime.datetime.fromtimestamp(timestamp))])
-                        PostgresConnection().insert(sql)
+                        # PostgresConnection().insert(sql)
+                        self.db.cursor().execute(sql)
+                        self.db.commit()
