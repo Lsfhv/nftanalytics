@@ -3,6 +3,8 @@ Keys and constants.
 """
 import os
 
+openseaFeeAddress = '0x0000a26b00c1F0DF003000390027140000fAa719'
+
 # https://app.infura.io/dashboard
 infuraurl = lambda x : f"https://mainnet.infura.io/v3/{x}"
 infuraurlsepolia = lambda x : f"https://sepolia.infura.io/v3/{x}"
@@ -38,6 +40,7 @@ openseaGetCollectionStats = lambda collection_slug : f"collections/{collection_s
 
 WETHAddress = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
 BLURPOOLAddress = '0x0000000000A39bb272e79075ade125fd351887Ac'
+ETHAddress = '0x0000000000000000000000000000000000000000'
 
 # huge abi containing seaport + all the method and functions we need.
 abi = ''

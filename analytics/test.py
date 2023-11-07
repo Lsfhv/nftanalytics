@@ -1,55 +1,64 @@
-import asyncio
-import json
-from websockets import connect 
-import os
-import asyncio
 from web3 import Web3
-from Postgresql import PostgresConnection
-from Keys import blurMakerPackedTopic, blurPackedTopic, blurTakerPackedTopic, openseaOrderFulfilledTopic
-from sql.sqlQGenerator import insertG
-import datetime
-import sqlite3
+import os
+import json
+f =open('abis/CustomTradesAbi.json')
+customTradesAbi = json.load(f)
+f.close()
+w3 = Web3(Web3.HTTPProvider(os.environ['INFURAURL']))
+x = w3.eth.get_transaction_receipt('0x2b379dac801ff4c69b35aaf3cda82b3271e21718781dc53f9d46966724113170')
+contract = w3.eth.contract(abi = customTradesAbi)
+openseaOrderFulfilledTopic = '0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31'
+openseaFeeAddress = '0x0000a26b00c1F0DF003000390027140000fAa719'
+for i in x['logs']:
+    eventSignature = i["topics"][0].hex()
+    if (eventSignature == openseaOrderFulfilledTopic):
+        decoded = contract.events.OrderFulfilled().process_log(i)['args']
+        offer = decoded['offer']
+        offerer = decoded['offerer']
+        recipient = decoded['recipient']
+        ofr = []
+        value = 0
+        for i in offer:
+            if i['itemType'] == 0 or i['itemType'] == 1:
+                value += i['amount']
+            elif i['itemType'] == 2 or i['itemType'] == 3:
+                collectionAddress = i['token']
+                tokenId = i['identifier']
 
-class WsConnect:
-    def __init__(self) -> None:
-        self.ws = None
-        self.q = asyncio.Queue(1e9)
-
+                ofr = ofr + [collectionAddress, tokenId]
+        ofr = ofr + [value]
         
+        consideration = decoded['consideration']
 
-    async def connect(self) -> None:
-        """Connect to ws endpoint
-        """     
-        self.ws = await connect(f"wss://mainnet.infura.io/ws/v3/{os.environ['INFURAAPIKEY']}")
-            
-    async def startHandlingMessages(self):
-        """Start handling messages
+        cdr = []
+        value = 0
+        for i in consideration:
+            if i['itemType'] == 0 or i['itemType'] == 1:
+                if (i['recipient'] != openseaFeeAddress):
+                    value += i['amount']
+            elif i['itemType'] == 2 or i['itemType'] == 3:  
+                collectionAddress = i['token']
+                tokenId = i['identifier']
+                cdr = cdr + [collectionAddress, tokenId]
+        cdr = cdr + [value]
+        result = {'marketplace': 'opensea'}
+        if len(cdr) > len(ofr):
+            result['src'] = recipient
+            result['dst'] = offerer
+            result['token'] = cdr[1]
+            result['price'] = ofr[0]
+            result['collectionAddress'] = cdr[0]
+        else:
+            result['src'] = offerer
+            result['dst'] = recipient
+            result['token'] = ofr[1]
+            result['price'] = cdr[0]
+            result['collectionAddress'] = ofr[0]
 
-        If subscription response, save the response
-        If response to an event, send it to self.q for processing
+        print("Offerer: ", offerer)
+        print("Recipient: ", recipient)
+        print("Offer: ", ofr)
+        print("Consideration: ", cdr)
+        print()
 
-        """
-        while True:
-            message = await self.ws.recv()
-            message = json.loads(message)
-            
-       
-            await self.q.put(message)
-
-            # print(len(self.subscriptionToAddress))
-                
-    async def startProcessingMessages(self):
-        while True:
-            message = await self.q.get()
-            print(message)
-
-async def main():
-    x = WsConnect()
-    await x.connect()
-    asyncio.create_task(x.startHandlingMessages())
-    asyncio.create_task(x.startProcessingMessages())
-    
-    await x.ws.send('{"jsonrpc":"2.0","method":"eth_subscribe","params":["logs",{"topics":["0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31"]}],"id":1}')
-    await asyncio.sleep(1000000)
-
-asyncio.run(main())
+        print(result)
