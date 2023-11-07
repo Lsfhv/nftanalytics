@@ -15,7 +15,7 @@ monitoring = {}
 validAddress = lambda x : True if len(x) == 42 and x[:2] == "0x" else False
 
 async def main():
-    x = WsConnect(sqlite3.connect('test.db'))
+    x = WsConnect(sqlite3.connect('test.db'))   
     await x.connect()
     asyncio.create_task(x.startHandlingMessages())
     asyncio.create_task(x.startProcessingMessages())
