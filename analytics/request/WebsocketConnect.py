@@ -8,10 +8,13 @@ import os
 import asyncio
 from web3 import Web3
 from Postgresql import PostgresConnection
-from Keys import blurMakerPackedTopic, blurPackedTopic, blurTakerPackedTopic, openseaOrderFulfilledTopic, WETHAddress, ETHAddress, openseaFeeAddress
+from Keys import blurMakerPackedTopic, blurPackedTopic, blurTakerPackedTopic, openseaOrderFulfilledTopic, WETHAddress, ETHAddress, openseaFeeAddress, transferTopic
 from sql.sqlQGenerator import insertG
 import datetime
 import sqlite3
+from request.getRequest import get
+from Keys import openseaBaseEndpointV1, openseaBaseEndpointV2, openseaHeaders
+
 
 class WsConnect:
     def __init__(self, db) -> None:
@@ -29,11 +32,36 @@ class WsConnect:
         f =open('abis/CustomTradesAbi.json')
         self.customTradesAbi = json.load(f)
         f.close()
+
+        f = open('abis/Erc721Abi.json')
+        self.erc721Abi = json.load(f)
+        f.close()
+
         self.contract = self.w3.eth.contract(abi= self.customTradesAbi)
 
+        self.blurTopics = {blurMakerPackedTopic, blurPackedTopic, blurTakerPackedTopic}
+        self.tradeTopics = self.blurTopics | {openseaOrderFulfilledTopic}
 
-        
 
+
+    async def doesSlugExist(self, collectionAddress: str):
+        """
+        Check if collection exists in slug
+        """
+        try:
+            retrieveContract = lambda address: f"/asset_contract/{address}"
+            response = self.db.cursor().execute(f"select * from slug where address = '{collectionAddress}'").fetchall()
+            if len(response) == 0:
+                openseaSlug =  get(openseaBaseEndpointV1, retrieveContract(collectionAddress), headers=openseaHeaders)
+                
+                openseaSlug = openseaSlug.json()['collection']['slug']
+                contract = self.w3.eth.contract(address= collectionAddress, abi = self.erc721Abi)
+                name = contract.functions.name().call()
+                self.db.cursor().execute(f"insert into slug values ('{collectionAddress}', '{openseaSlug}', '{openseaSlug}', '{name}')")
+                self.db.commit()
+        except:
+            print("error when getting slug from opensea")
+            print(collectionAddress)
     async def connect(self) -> None:
         """Connect to ws endpoint
         """     
@@ -60,8 +88,6 @@ class WsConnect:
                 self.subscriptionToAddress[message['result']] = message['id']
             else:
                 await self.q.put(message)
-
-            # print(len(self.subscriptionToAddress))
 
     async def sendMessage(self, address: str, topics: list[str]):
         """Send a message to ws
@@ -105,52 +131,76 @@ class WsConnect:
         
         return timestamp
     
-    def processBlurTrade(self, event):
-        pass        
+    def processBlurTrade(self, event, tokenToTraders):
+        firstTopic = event["topics"][0].hex()
+
+        if firstTopic == blurMakerPackedTopic:
+            decoded = self.contract.events.Execution721MakerFeePacked().process_log(event)['args']
+        elif firstTopic == blurPackedTopic:
+            decoded = self.contract.events.Execution721Packed().process_log(event)['args']
+        elif firstTopic == blurTakerPackedTopic:
+            decoded = self.contract.events.Execution721TakerFeePacked().process_log(event)['args']
+        
+        tokenIdListingIndexTrader = hex(decoded["tokenIdListingIndexTrader"]) 
+        collectionPriceSide = hex(decoded["collectionPriceSide"])
+
+        collection = "0x" + collectionPriceSide[len(collectionPriceSide)-40:]
+        price = collectionPriceSide[:len(collectionPriceSide)-40][2:]
+        if len(collectionPriceSide) == 65:
+            price = collectionPriceSide[:len(collectionPriceSide)-40][2:][8:]
+
+        listingIndexTrader = "0x" + tokenIdListingIndexTrader[len(tokenIdListingIndexTrader) - 40:]
+        tokenId = int(tokenIdListingIndexTrader[:len(tokenIdListingIndexTrader)-40][2:][:-2],16)
+
+        return  {'marketplace': 'blur', 
+            'collectionAddress': collection,
+            'token': tokenId,  
+            'price': int(price, 16)/1e18,
+            'src': tokenToTraders[tokenId][0],
+            'dst': tokenToTraders[tokenId][1]
+        }  
     
     def processOpenseaTrade(self, event):
         decoded = self.contract.events.OrderFulfilled().process_log(event)['args']
         offer = decoded['offer']
         offerer = decoded['offerer']
         recipient = decoded['recipient']
-        ofr = []
-        value = 0
-        for i in offer:
-            if i['itemType'] == 0 or i['itemType'] == 1:
-                value += i['amount']
-            elif i['itemType'] == 2 or i['itemType'] == 3:
-                collectionAddress = i['token']
-                tokenId = i['identifier']
-
-                ofr = ofr + [collectionAddress, tokenId]
-        ofr = ofr + [value]
-        
         consideration = decoded['consideration']
 
-        cdr = []
-        value = 0
-        for i in consideration:
-            if i['itemType'] == 0 or i['itemType'] == 1:
-                if (i['recipient'] != openseaFeeAddress):
+        def helper(arr):
+            value = 0
+            result = []
+            for i in arr:
+                if i['itemType'] == 0 or i['itemType'] == 1:
                     value += i['amount']
-            elif i['itemType'] == 2 or i['itemType'] == 3:  
-                collectionAddress = i['token']
-                tokenId = i['identifier']
-                cdr = cdr + [collectionAddress, tokenId]
-        cdr = cdr + [value]
+                elif i['itemType'] == 2 or i['itemType'] == 3:
+                    collectionAddress = i['token']
+                    tokenId = i['identifier']
+                    result = result + [collectionAddress, tokenId]
+            result = result + [value]
+            return result
+
+        ofr = helper(offer)
+        cdr = helper(consideration)        
+        
         result = {'marketplace': 'opensea'}
-        if len(cdr) > len(ofr):
-            result['src'] = recipient
-            result['dst'] = offerer
-            result['token'] = cdr[1]
-            result['price'] = ofr[0]
-            result['collectionAddress'] = cdr[0]
-        else:
-            result['src'] = offerer
-            result['dst'] = recipient
-            result['token'] = ofr[1]
-            result['price'] = cdr[0]
-            result['collectionAddress'] = ofr[0]
+        try:
+            if len(cdr) > len(ofr):
+                result['src'] = recipient
+                result['dst'] = offerer
+                result['token'] = cdr[1]
+                result['price'] = ofr[0]
+                result['collectionAddress'] = cdr[0]
+            else:
+                result['src'] = offerer
+                result['dst'] = recipient
+                result['token'] = ofr[1]
+                result['price'] = cdr[0]
+                result['collectionAddress'] = ofr[0]
+        except:
+            print(offer, consideration)
+            print("Error processing opensea trade")
+
 
         # print("Offerer: ", offerer)
         # print("Recipient: ", recipient)
@@ -172,109 +222,31 @@ class WsConnect:
             message = await self.q.get()
             txHash = message['params']['result']['transactionHash']
             receipt = self.w3.eth.get_transaction_receipt(txHash)
+            tokenToTraders = {}
+
+            logs = receipt['logs']
+            logs.sort(key = lambda x : x['topics'][0].hex() != transferTopic)
+
             for event in receipt['logs']:
-                eventSignature = event["topics"][0].hex()
-                if eventSignature == openseaOrderFulfilledTopic:
-                    result = self.processOpenseaTrade(event)
-                    result['txHash'] = txHash
-                    timestamp = self.getTimestampInEpoch(txHash)
-                    sql = insertG("trades", [result['collectionAddress'], result['src'], result['dst'], result['token'], str(result['price']), result['txHash'], result['marketplace'], str(datetime.datetime.fromtimestamp(timestamp))])
-                    self.db.cursor().execute(sql)
-                    self.db.commit()
+                firstTopic = event["topics"][0].hex()
 
-                    print(result)
+                if firstTopic == transferTopic and len(event['topics']) == 4:
+                    decoded = self.contract.events.Transfer().process_log(event)['args']
+                    tokenToTraders[decoded['tokenId']] = [decoded['from'], decoded['to']]
 
-
-        # while True:
-        #     message = await self.q.get()
-        #     # print(self.q.qsize()) 
-        #     # print(self.q.qsize())
-
-        #     try:
-        #         subscription = message['params']['subscription']
-        #         address = self.subscriptionToAddress[subscription]
-
-        #         txHash = message['params']['result']['transactionHash']
-
-        #         print(txHash)
-                
-        #         receipt = self.w3.eth.get_transaction_receipt(txHash)
-
-        #         src = message['params']['result']['topics'][1]
-        #         src = "0x" + src[len(src) - 40 : ]
-
-        #         dst = message['params']['result']['topics'][2]
-        #         dst = "0x" + dst[len(dst) - 40 : ]
-
-        #         token = int(message['params']['result']['topics'][3], 16)
-
-        #         print("got something")
-
-                
-        #         for event in receipt["logs"]:
-        #             eventSignature = event["topics"][0].hex()
-
-        #             if eventSignature == blurMakerPackedTopic or eventSignature == blurTakerPackedTopic or eventSignature == blurPackedTopic:
-        #                 if eventSignature == blurMakerPackedTopic:
-        #                     decoded = self.contract.events.Execution721MakerFeePacked().process_log(event)["args"]
-        #                 elif eventSignature == blurTakerPackedTopic:
-        #                     decoded = self.contract.events.Execution721TakerFeePacked().process_log(event)["args"]
-        #                 else: 
-        #                     decoded = self.contract.events.Execution721Packed().process_log(event)["args"]
-
-        #                 tokenIdListingIndexTrader = hex(decoded["tokenIdListingIndexTrader"]) 
-        #                 collectionPriceSide = hex(decoded["collectionPriceSide"])
-
-        #                 # If blurMakerPackedTopic, then this is the address of the wallet that listed it. The NFT will be transferred from this wallet. i.e trader = src
-        #                 # Else, someone sold into bids. Trader = the person whos bid got accepted, the NFT is given to this person. i.e trader = dst
-        #                 trader = "0x" + tokenIdListingIndexTrader[len(tokenIdListingIndexTrader) - 40:] 
-        #                 tokenId = tokenIdListingIndexTrader[:len(tokenIdListingIndexTrader)-40][2:][:-2]
-        #                 tokenId = int(tokenId, 16)
-        #                 collection = "0x" + collectionPriceSide[len(collectionPriceSide)-40:]
-
-        #                 if eventSignature == blurMakerPackedTopic:
-        #                     price = collectionPriceSide[:len(collectionPriceSide)-40][2:]
-        #                 else:
-        #                     price = collectionPriceSide[:len(collectionPriceSide)-40][2:][1:]
-        #                 price = int(price, 16)
-
-        #                 timestamp = self.getTimestampInEpoch(txHash)
-        #                 if (eventSignature == blurMakerPackedTopic and src == trader and collection == address.lower() and token == tokenId) or ((eventSignature == blurTakerPackedTopic or eventSignature == blurPackedTopic) and dst == trader and collection == address.lower() and token == tokenId):
-        #                     sql = insertG("trades", [address, src, dst, tokenId, str(price), txHash, "blur", str(datetime.datetime.fromtimestamp(timestamp))])  
-        #                     # PostgresConnection().insert(sql)
-        #                     self.db.cursor().execute(sql)
-        #                     self.db.commit()
-        #             elif eventSignature == openseaOrderFulfilledTopic:
-        #                 decoded = self.contract.events.OrderFulfilled().process_log(event)["args"]
-
-        #                 offerer = decoded['offerer']
-        #                 recipient = decoded['recipient']
-                        
-        #                 if src == offerer.lower() and dst == recipient.lower() and token == decoded['offer'][0]['identifier']:  
-        #                     # Listing was sold, make order. 
-        #                     # offerer = the lister, recipeint = the buyer.
-        #                     # print("got here")
-        #                     consideration = decoded['consideration']
-
-        #                     price = 0
-        #                     for i in consideration:
-        #                         price += i['amount']
-
-        #                     timestamp = self.getTimestampInEpoch(txHash)
-        #                     sql = insertG("trades", [address, offerer, recipient, token, str(price), txHash, "opensea", str(datetime.datetime.fromtimestamp(timestamp))])
-        #                     # PostgresConnection().insert(sql)
-        #                     self.db.cursor().execute(sql)
-        #                     self.db.commit()
-        #                 elif src == recipient.lower() and dst == offerer.lower() and token == decoded['consideration'][0]['identifier']:
-        #                     # Someone sold into bids.
-        #                     # src = the nft holder, dst = the bid poster
-
-        #                     price = decoded['offer'][0]['amount']
-
-        #                     timestamp = self.getTimestampInEpoch(txHash)
-        #                     sql = insertG("trades", [address, recipient, offerer, token, str(price), txHash, "opensea", str(datetime.datetime.fromtimestamp(timestamp))])
-        #                     # PostgresConnection().insert(sql)
-        #                     self.db.cursor().execute(sql)
-        #                     self.db.commit()
-        #     except:
-        #         pass
+                if firstTopic in self.tradeTopics:
+                    if firstTopic == openseaOrderFulfilledTopic:
+                        result = self.processOpenseaTrade(event)
+                    elif firstTopic in self.blurTopics:
+                        result = self.processBlurTrade(event, tokenToTraders)
+                    
+                    try:
+                        result['txHash'] = txHash
+                        timestamp = self.getTimestampInEpoch(txHash)
+                        await self.doesSlugExist(result['collectionAddress'])
+                        sql = insertG("trades", [result['collectionAddress'], result['src'], result['dst'], result['token'], str(result['price']), result['txHash'], result['marketplace'], str(datetime.datetime.fromtimestamp(timestamp))])
+                        self.db.cursor().execute(sql)
+                        self.db.commit()
+                    except:
+                        print("Error")
+                        print(result)

@@ -36,5 +36,5 @@ def get(url, endpoint = "", params = {}, headers = {}, auth = None):
     while response.status_code != 200:
         print("Response code not 200, trying again ...")
         response = requests.get(url, headers = headers, auth = auth)
-        
+    
     return response
