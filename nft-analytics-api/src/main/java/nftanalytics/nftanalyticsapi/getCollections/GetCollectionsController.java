@@ -29,7 +29,7 @@ public class GetCollectionsController {
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery("select * from slug");
             while (rs.next()) {
-                collections.add(new CollectionModel(rs.getString("display_name"), rs.getString("address"), rs.getString("opensea"))); 
+                collections.add(new CollectionModel(rs.getString("name"), rs.getString("address"), rs.getString("openseaSlug"))); 
             }
         } catch (Exception e) {
             e.printStackTrace();

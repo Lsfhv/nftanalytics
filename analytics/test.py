@@ -76,16 +76,11 @@ for i in logs:
             price = collectionPriceSide[:len(collectionPriceSide)-40][2:][8:]
             side = True
 
-
+        collection = Web3.to_checksum_address(collection)
         # print(side)
 
         listingIndexTrader = "0x" + tokenIdListingIndexTrader[len(tokenIdListingIndexTrader) - 40:]
         tokenId = int(tokenIdListingIndexTrader[:len(tokenIdListingIndexTrader)-40][2:][:-2],16)
-
-        # print("Listing Index Trader: ", listingIndexTrader)
-        # print("Collection: ", collection)
-        # print("TokenId: ", tokenId)
-        # print("Price: ", int(price, 16)/1e18)  
 
         result = {'marketplace': 'blur', 
                 'collectionAddress': collection,
@@ -93,7 +88,6 @@ for i in logs:
                 'price': int(price, 16)/1e18,
                 'src': tokenToTraders[tokenId][0],
                 'dst': tokenToTraders[tokenId][1]}  
-        
 
         print(result)
         

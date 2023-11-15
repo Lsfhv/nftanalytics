@@ -28,7 +28,7 @@ public class GetDisplayNameController {
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(sqlQuery);
             while (rs.next()) {
-                result = rs.getString("display_name");
+                result = rs.getString("name");                
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());

@@ -2,9 +2,9 @@ create table trades (
     address VARCHAR(45),
     src VARCHAR(45), 
     dst VARCHAR(45), 
-    token_id bigint,
+    tokenid bigint,
     price VARCHAR(100),  -- 100 digit integers
-    tx_hash VARCHAR(66),
-    market_place VARCHAR(100),
-    time_updated timestamp  
+    txhash VARCHAR(66),
+    platform VARCHAR(100),
+    timestamp timestamp  
 );

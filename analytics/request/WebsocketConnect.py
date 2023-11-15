@@ -48,20 +48,22 @@ class WsConnect:
         """
         Check if collection exists in slug
         """
-        try:
-            retrieveContract = lambda address: f"/asset_contract/{address}"
-            response = self.db.cursor().execute(f"select * from slug where address = '{collectionAddress}'").fetchall()
-            if len(response) == 0:
-                openseaSlug =  get(openseaBaseEndpointV1, retrieveContract(collectionAddress), headers=openseaHeaders)
-                
-                openseaSlug = openseaSlug.json()['collection']['slug']
-                contract = self.w3.eth.contract(address= collectionAddress, abi = self.erc721Abi)
+        # try:
+            # retrieveContract = lambda address: f"/asset_contract/{address}"
+        retrieveContract = lambda address: f"/chain/ethereum/contract/{address}"
+        response = self.db.cursor().execute(f"select * from slug where address = '{collectionAddress}'").fetchall()
+        if len(response) == 0:
+            openseaSlug =  get(openseaBaseEndpointV2, retrieveContract(collectionAddress), headers=openseaHeaders)
+            openseaSlug = openseaSlug.json()['collection']
+            contract = self.w3.eth.contract(address= collectionAddress, abi = self.erc721Abi)
+            try:
                 name = contract.functions.name().call()
-                self.db.cursor().execute(f"insert into slug values ('{collectionAddress}', '{openseaSlug}', '{openseaSlug}', '{name}')")
-                self.db.commit()
-        except:
-            print("error when getting slug from opensea")
-            print(collectionAddress)
+            except Exception as e:
+                name = ""
+                print("how?: ", e)
+            self.db.cursor().execute(f"insert into slug values ('{collectionAddress}', '{openseaSlug}', '{openseaSlug}', '{name}')")
+            self.db.commit()
+
     async def connect(self) -> None:
         """Connect to ws endpoint
         """     
@@ -144,7 +146,7 @@ class WsConnect:
         tokenIdListingIndexTrader = hex(decoded["tokenIdListingIndexTrader"]) 
         collectionPriceSide = hex(decoded["collectionPriceSide"])
 
-        collection = "0x" + collectionPriceSide[len(collectionPriceSide)-40:]
+        collection = Web3.to_checksum_address("0x" + collectionPriceSide[len(collectionPriceSide)-40:])
         price = collectionPriceSide[:len(collectionPriceSide)-40][2:]
         if len(collectionPriceSide) == 65:
             price = collectionPriceSide[:len(collectionPriceSide)-40][2:][8:]
@@ -201,14 +203,6 @@ class WsConnect:
             print(offer, consideration)
             print("Error processing opensea trade")
 
-
-        # print("Offerer: ", offerer)
-        # print("Recipient: ", recipient)
-        # print("Offer: ", ofr)
-        # print("Consideration: ", cdr)
-        # print()
-
-        # print(result)
         return result
     
     async def startProcessingMessages(self):
@@ -217,36 +211,38 @@ class WsConnect:
         """
 
         self.db.cursor().execute("create table if not exists trades (address varchar(42), src varchar(42), dst varchar(42), tokenid int, price varchar(100), txhash varchar(100), platform varchar(100), timestamp varchar(100))")
+        try:
+            while True:
+                message = await self.q.get()
+                txHash = message['params']['result']['transactionHash']
+                receipt = self.w3.eth.get_transaction_receipt(txHash)
+                tokenToTraders = {}
 
-        while True:
-            message = await self.q.get()
-            txHash = message['params']['result']['transactionHash']
-            receipt = self.w3.eth.get_transaction_receipt(txHash)
-            tokenToTraders = {}
+                logs = receipt['logs']
+                logs.sort(key = lambda x : x['topics'][0].hex() != transferTopic)
 
-            logs = receipt['logs']
-            logs.sort(key = lambda x : x['topics'][0].hex() != transferTopic)
+                for event in receipt['logs']:
+                    firstTopic = event["topics"][0].hex()
 
-            for event in receipt['logs']:
-                firstTopic = event["topics"][0].hex()
+                    if firstTopic == transferTopic and len(event['topics']) == 4:
+                        decoded = self.contract.events.Transfer().process_log(event)['args']
+                        tokenToTraders[decoded['tokenId']] = [decoded['from'], decoded['to']]
 
-                if firstTopic == transferTopic and len(event['topics']) == 4:
-                    decoded = self.contract.events.Transfer().process_log(event)['args']
-                    tokenToTraders[decoded['tokenId']] = [decoded['from'], decoded['to']]
-
-                if firstTopic in self.tradeTopics:
-                    if firstTopic == openseaOrderFulfilledTopic:
-                        result = self.processOpenseaTrade(event)
-                    elif firstTopic in self.blurTopics:
-                        result = self.processBlurTrade(event, tokenToTraders)
-                    
-                    try:
+                    if firstTopic in self.tradeTopics:
+                        if firstTopic == openseaOrderFulfilledTopic:
+                            result = self.processOpenseaTrade(event)
+                        elif firstTopic in self.blurTopics:
+                            result = self.processBlurTrade(event, tokenToTraders)
+                        
                         result['txHash'] = txHash
                         timestamp = self.getTimestampInEpoch(txHash)
-                        await self.doesSlugExist(result['collectionAddress'])
-                        sql = insertG("trades", [result['collectionAddress'], result['src'], result['dst'], result['token'], str(result['price']), result['txHash'], result['marketplace'], str(datetime.datetime.fromtimestamp(timestamp))])
-                        self.db.cursor().execute(sql)
-                        self.db.commit()
-                    except:
-                        print("Error")
-                        print(result)
+
+                        try:
+                            await self.doesSlugExist(result['collectionAddress'])
+                            sql = insertG("trades", [result['collectionAddress'], result['src'], result['dst'], result['token'], str(result['price']), result['txHash'], result['marketplace'], str(datetime.datetime.fromtimestamp(timestamp))])
+                            self.db.cursor().execute(sql)
+                            self.db.commit()
+                        except:
+                            pass
+        except Exception as e:
+            print(e)

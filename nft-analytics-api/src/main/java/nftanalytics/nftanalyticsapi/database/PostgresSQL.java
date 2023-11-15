@@ -2,14 +2,15 @@ package nftanalytics.nftanalyticsapi.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class PostgresSQL {
 
-    private final String url = "jdbc:postgresql://127.0.0.1:5432/nfttest";
-    private final String user = "snow";
-    private final String password = "";
-
+    private final String url = "jdbc:sqlite:analytics/test.db"; 
     private Connection conn = null;
 
     public PostgresSQL() {
@@ -17,10 +18,10 @@ public class PostgresSQL {
     }
 
     private Connection connect() {
-        Connection conn = null;
         try {
-            conn = DriverManager.getConnection(url, user, password);
+            conn = DriverManager.getConnection(url);
         } catch (SQLException e) {
+            System.out.println("got here");
             System.out.println(e.getMessage());
         }
 
@@ -29,5 +30,35 @@ public class PostgresSQL {
 
     public Connection getConnection() {
         return conn;
+    }
+
+    public ArrayList<ArrayList<String>> selectStatement(String sqlQuery) {
+        ArrayList<ArrayList<String>> result = new ArrayList<>();
+        
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(sqlQuery); 
+            int columnCount = rs.getMetaData().getColumnCount(); 
+            String[] columnNames = new String[columnCount];
+            for (int i = 1; i <= columnCount; i++) {
+                columnNames[i - 1] = rs.getMetaData().getColumnName(i);
+            }
+
+            while (rs.next()) {
+                ArrayList<String> row = new ArrayList<>();
+                for (int i = 1; i <= columnCount; i++) {
+                    row.add(rs.getString(i));
+                }
+                result.add(row); 
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        PostgresSQL psql = new PostgresSQL();
+        psql.selectStatement("SELECT * FROM trades");
+        
     }
 }
