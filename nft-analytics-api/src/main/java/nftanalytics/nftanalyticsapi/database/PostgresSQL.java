@@ -3,15 +3,13 @@ package nftanalytics.nftanalyticsapi.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class PostgresSQL {
 
-    private final String url = "jdbc:sqlite:analytics/test.db"; 
-    private Connection conn = null;
+    private final String url = "jdbc:sqlite:../analytics/test.db"; 
+    private Connection conn;
 
     public PostgresSQL() {
         conn = connect();
@@ -24,7 +22,6 @@ public class PostgresSQL {
             System.out.println("got here");
             System.out.println(e.getMessage());
         }
-
         return conn;
     }
 
@@ -38,11 +35,6 @@ public class PostgresSQL {
         try {
             ResultSet rs = conn.createStatement().executeQuery(sqlQuery); 
             int columnCount = rs.getMetaData().getColumnCount(); 
-            String[] columnNames = new String[columnCount];
-            for (int i = 1; i <= columnCount; i++) {
-                columnNames[i - 1] = rs.getMetaData().getColumnName(i);
-            }
-
             while (rs.next()) {
                 ArrayList<String> row = new ArrayList<>();
                 for (int i = 1; i <= columnCount; i++) {

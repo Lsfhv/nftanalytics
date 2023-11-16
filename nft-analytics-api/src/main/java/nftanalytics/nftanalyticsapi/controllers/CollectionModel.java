@@ -1,4 +1,4 @@
-package nftanalytics.nftanalyticsapi.getCollections;
+package nftanalytics.nftanalyticsapi.controllers;
 
 public class CollectionModel {
     public String collectionName; 
