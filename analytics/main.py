@@ -1,15 +1,6 @@
-from sys import argv
-
-from Intervals import *
-
 import asyncio
-from aioconsole import ainput
-# from analytics.Transfers import monitorTransfers
-from analytics.stats.Holders import computeUniqueOwners
 from request.WebsocketConnect import WsConnect
 import sqlite3
-from analytics.Marketplace import Marketplace
-
 from analytics.Blur import Blur
 from analytics.Opensea import Opensea
 monitoring = {}

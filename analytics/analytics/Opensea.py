@@ -1,5 +1,5 @@
 from analytics.Marketplace import Marketplace
-from Keys import openseaOrderFulfilledTopic
+from KeysAndConstants import openseaOrderFulfilledTopic
 import asyncio
 from web3 import Web3
 from hexbytes import HexBytes
@@ -12,6 +12,7 @@ class Opensea(Marketplace):
 
     def processOpenseaTrade(self, event):
         decoded = self.contract.events.OrderFulfilled().process_log(event)['args']
+        print(decoded)
         offer = decoded['offer']
         offerer = decoded['offerer']
         recipient = decoded['recipient']
@@ -39,17 +40,20 @@ class Opensea(Marketplace):
                 result['src'] = recipient
                 result['dst'] = offerer
                 result['token'] = cdr[1]
-                result['price'] = ofr[0]
+                result['price'] = str(ofr[0])
                 result['collectionAddress'] = cdr[0]
             else:
                 result['src'] = offerer
                 result['dst'] = recipient
                 result['token'] = ofr[1]
-                result['price'] = cdr[0]
+                result['price'] = str(cdr[0])
                 result['collectionAddress'] = ofr[0]
         except:
             print(offer, consideration)
             print("Error processing opensea trade")
+
+        # print(offer, consideration)
+        # print()
 
         return result
 
@@ -59,13 +63,7 @@ class Opensea(Marketplace):
             event = super().transformMessage(message)
             result = self.processOpenseaTrade(event)
             result['txHash'] = message['params']['result']['transactionHash'].hex()
-            timestamp = super().getTimestampInEpoch(result['txHash'])
-            result['timestamp'] = timestamp
+            result['timestamp'] = super().getTimestampInEpoch(result['txHash'])
             super().postTrade(result)
 
                 
-
-            
-
-
-

@@ -60,3 +60,5 @@ blurPackedTopic = '0x1d5e12b51dee5e4d34434576c3fb99714a85f57b0fd546ada4b0bddd736
 # OrderFulfilled
 openseaOrderFulfilledTopic = '0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31'
 
+SLUGTABLE = 'slug'
+TRADESTABLE = 'trades'

@@ -2,7 +2,7 @@ import asyncio
 import os
 from web3 import Web3
 from request.getRequest import get
-from Keys import openseaBaseEndpointV1, openseaBaseEndpointV2, openseaHeaders
+from KeysAndConstants import openseaBaseEndpointV2, openseaHeaders, SLUGTABLE, TRADESTABLE
 from sql.sqlQGenerator import insertG
 from datetime import datetime
 import json
@@ -44,37 +44,30 @@ class Marketplace:
         return timestamp
 
     def postTrade(self, trade):
-        sql = insertG("trades", [
-            trade['collectionAddress'], 
-            trade['src'], 
-            trade['dst'],   
-            trade['token'],
-            trade['price'],
-            trade['txHash'],
-            trade['marketplace'],
-            str(datetime.fromtimestamp(trade['timestamp']))
-        ])
-        self.dbConnection.cursor().execute(sql)
+        self.dbConnection.cursor().execute("CREATE TABLE IF NOT EXISTS trades (address VARCHAR(45),src VARCHAR(45), dst VARCHAR(45), tokenid bigint,price VARCHAR(100),  txhash VARCHAR(66),platform VARCHAR(100),timestamp timestamp  )")
+        params = (trade['collectionAddress'], trade['src'], trade['dst'], trade['token'], trade['price'], trade['txHash'], trade['marketplace'], str(datetime.fromtimestamp(trade['timestamp'])))
+        self.dbConnection.cursor().execute(f"INSERT INTO {TRADESTABLE} VALUES (?,?,?,?,?,?,?,?)", params)
         self.dbConnection.commit()
     
-    async def doesSlugExist(self, collectionAddress: str):
+    def doesSlugExist(self, collectionAddress: str):
         """
-        Check if collection exists in slug
+        Check if collection exists in slug table. If not, add it.
         """
+        collectionAddress = Web3.to_checksum_address(collectionAddress)
+        self.dbConnection.cursor().execute(f"CREATE TABLE IF NOT EXISTS slug (address VARCHAR(45) primary key, openseaSlug VARCHAR(100), blurSlug VARCHAR(100), name VARCHAR(100))")
 
         retrieveContract = lambda address: f"/chain/ethereum/contract/{address}"
-        response = self.db.cursor().execute(f"select * from slug where address = '{collectionAddress}'").fetchall()
+        response = self.dbConnection.cursor().execute(f"select * from slug where address = '{collectionAddress}'").fetchall()
         if len(response) == 0:
-            openseaSlug =  get(openseaBaseEndpointV2, retrieveContract(collectionAddress), headers=openseaHeaders)
-            openseaSlug = openseaSlug.json()['collection']
+            openseaSlug =  get(openseaBaseEndpointV2, retrieveContract(collectionAddress), headers=openseaHeaders).json()['collection']
             contract = self.w3.eth.contract(address= collectionAddress, abi = self.erc721Abi)
             try:
                 name = contract.functions.name().call()
             except Exception as e:
                 name = ""
                 print("how?: ", e)
-            self.db.cursor().execute(f"insert into slug values ('{collectionAddress}', '{openseaSlug}', '{openseaSlug}', '{name}')")
-            self.db.commit()
+            self.dbConnection.cursor().execute(f"INSERT INTO {SLUGTABLE} VALUES (?,?,?,?)", (collectionAddress, openseaSlug, openseaSlug, name))
+            self.dbConnection.commit()
 
     def transformMessage(self, message):
         """Transform message from infura eth_subscribe method 

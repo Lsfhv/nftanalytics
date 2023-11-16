@@ -1,5 +1,5 @@
 from analytics.Marketplace import Marketplace
-from Keys import blurMakerPackedTopic, blurPackedTopic, blurTakerPackedTopic, transferTopic
+from KeysAndConstants import blurMakerPackedTopic, blurPackedTopic, blurTakerPackedTopic, transferTopic
 import asyncio
 from web3 import Web3
 class Blur(Marketplace):
