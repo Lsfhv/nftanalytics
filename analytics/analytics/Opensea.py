@@ -12,7 +12,6 @@ class Opensea(Marketplace):
 
     def processOpenseaTrade(self, event):
         decoded = self.contract.events.OrderFulfilled().process_log(event)['args']
-        print(decoded)
         offer = decoded['offer']
         offerer = decoded['offerer']
         recipient = decoded['recipient']
@@ -51,9 +50,6 @@ class Opensea(Marketplace):
         except:
             print(offer, consideration)
             print("Error processing opensea trade")
-
-        # print(offer, consideration)
-        # print()
 
         return result
 
